@@ -159,7 +159,7 @@ function formatTime(seconds: number): string {
 }
 
 async function generateChaptersFromTranscript(transcriptText: string, topicTitle: string): Promise<VideoChapter[]> {
-  const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash', generationConfig: { responseMimeType: "application/json" } });
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash', generationConfig: { responseMimeType: "application/json" } });
   const prompt = `
 You are an expert curriculum designer and educational editor.
 We have a video transcript with timestamps.
@@ -203,7 +203,7 @@ Return ONLY a valid JSON array matching this schema:
 }
 
 async function generateSimulatedChapters(topicTitle: string): Promise<VideoChapter[]> {
-  const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash', generationConfig: { responseMimeType: "application/json" } });
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash', generationConfig: { responseMimeType: "application/json" } });
   const prompt = `
 Generate a simulated detailed chapter breakdown with timestamps and detailed summaries for a course topic titled "${topicTitle}".
 Create 5 logical chapters representing a typical 10-15 minute educational video about this topic.
@@ -237,7 +237,7 @@ async function generateContentFromTitle(topicTitle: string): Promise<BaseAnalysi
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const summaryPrompt = `Create 4 key insights about "${topicTitle}". Each: emoji, heading (max 5 words), detail (max 20 words). Return JSON array only.`;
     const summaryRes = await model.generateContent(summaryPrompt);

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLearningStore } from '@/store/use-learning-store';
-import { analyzeVideo } from '@/services/ai/video-analyzer';
+import { analyzeVideoAction } from '@/actions/ai-generation';
 import { VideoAnalysisResult, TranscriptChunk } from '@/types/video-analysis';
 import { MCQQuestion } from '@/types/ai-output';
 import { FlowchartRenderer } from '@/components/features/flowchart/FlowchartRenderer';
@@ -198,7 +198,7 @@ export function AdaptivePanel({ courseId, topicSlug, topicTitle, videoId, isComp
       return;
     }
     setLoading(true);
-    analyzeVideo(topicSlug, topicTitle, videoId)
+    analyzeVideoAction(topicSlug, topicTitle, videoId)
       .then((result) => {
         cacheVideoAnalysis(cacheKey, result);
         setAnalysis(result);
