@@ -1,0 +1,10 @@
+{
+  "progress": [
+    {
+      "userId": "local_user",
+      "topicId": "t123",
+      "courseId": "c123",
+      "timeSpent": 45
+    }
+  ]
+}

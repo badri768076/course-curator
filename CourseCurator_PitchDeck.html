@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Curator AI - Pitch Deck</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;600&display=swap');
+
+        :root {
+            --bg-slide: #ffffff;
+            --bg-body: #f1f5f9;
+            --text-dark: #0f172a;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --accent-primary: #4f46e5; /* Indigo */
+            --accent-secondary: #10b981; /* Emerald */
+            --card-bg: #f8fafc;
+            --border: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html {
+            font-size: 26px; /* Scales up all text significantly for the presentation */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1, h2, h3, h4 { 
+            font-family: 'Outfit', sans-serif; 
+            color: var(--text-dark);
+        }
+
+        .slide {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto 3rem auto;
+            min-height: 700px;
+            padding: 4rem 4rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            page-break-after: always;
+            position: relative;
+            background-color: var(--bg-slide);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+
+        /* Replaced gradient with solid primary for a cleaner corporate look */
+        .text-gradient {
+            color: var(--accent-primary);
+        }
+
+        .hero h1 {
+            font-size: 4.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            text-align: center;
+            color: var(--text-dark);
+        }
+
+        .hero p {
+            font-size: 1.5rem;
+            text-align: center;
+            color: var(--text-muted);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .tagline {
+            font-size: 2.2rem;
+            font-weight: 800;
+            text-align: center;
+            margin-top: 2.5rem;
+            padding: 1rem 2.5rem;
+            border: 2px solid var(--accent-primary);
+            border-radius: 8px; /* Modern square-ish pill */
+            background: #eef2ff;
+            color: var(--accent-primary);
+            display: inline-block;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        .card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        ul { list-style: none; }
+        ul li {
+            margin-bottom: 0.75rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        ul li::before {
+            content: "■"; /* More professional bullet */
+            font-size: 0.8em;
+            position: absolute;
+            left: 0;
+            top: 0.3em;
+            color: var(--accent-secondary);
+        }
+
+        .highlight-box {
+            background: #f0fdf4; /* Light emerald background */
+            border-left: 4px solid var(--accent-secondary);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .highlight-box h4 { font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--text-dark); }
+
+        .number-stat {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--accent-primary);
+            line-height: 1;
+        }
+
+        /* Print optimization */
+        @page {
+            size: 1920px 1080px; /* Fixed 16:9 presentation size */
+            margin: 0; /* Removes URL, Date, and Page Numbers */
+        }
+        @media print {
+            body { background: white; padding: 0; margin: 0; display: block; width: 1920px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .slide { 
+                margin: 0; 
+                width: 1920px; 
+                height: 1080px; 
+                max-width: none; /* Crucial: overrides 1100px limit */
+                padding: 100px 150px; 
+                justify-content: center; 
+                border-radius: 0; 
+                box-shadow: none; 
+                border: none; 
+                page-break-after: always;
+                page-break-inside: avoid;
+            }
+            .slide:last-child {
+                page-break-after: auto; /* Prevents the final blank page */
+            }
+            .hero { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Slide 1: Hero -->
+    <div class="slide hero">
+        <h1>Course<span class="text-gradient">Curator</span> AI</h1>
+        <p>The first adaptive learning platform powered by Autonomous Agentic AI.</p>
+        <div style="text-align: center;">
+            <div class="tagline">"We Don't Ask, We Derive."</div>
+        </div>
+        <p style="margin-top: 3rem; font-size: 1.1rem;">HackArena 2.0 | Hyderabad Zonal Round Submission</p>
+    </div>
+
+    <!-- Slide 2: The Problem -->
+    <div class="slide">
+        <h2><span class="text-gradient">01.</span> The Broken EdTech Paradigm</h2>
+        
+        <div class="grid-2">
+            <div>
+                <p style="font-size: 1.25rem; margin-bottom: 1.5rem;">Current platforms assume all students learn the same way. When they try to personalize, they rely on flawed self-reporting.</p>
+                <div class="highlight-box">
+                    <h4>The Fallacy of Questionnaires</h4>
+                    <p>Every major app asks students: "What is your learning style?" Research shows students rarely know their true style. They guess, and the platform locks them into a sub-optimal path.</p>
+                </div>
+            </div>
+            <div class="card">
+                <h3>The Crisis in Numbers</h3>
+                <ul>
+                    <li><span class="number-stat">67%</span><br>of students report online courses don't match how they learn.</li>
+                    <li><span class="number-stat">3</span><br>sessions is all it takes for the average student to abandon a static course.</li>
+                    <li><span class="number-stat">250M+</span><br>students in India forced through one-size-fits-all formats.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 3: The Innovation -->
+    <div class="slide">
+        <h2><span class="text-gradient">02.</span> The Paradigm Shift</h2>
+        
+        <p style="font-size: 1.5rem; margin-bottom: 2rem; color: white;">If you want to know how a student learns, watch what they do.</p>
+        
+        <div class="card" style="margin-bottom: 2rem;">
+            <h3>We Don't Ask. We Derive.</h3>
+            <p>Course Curator AI is driven by a passive, behavioral inference engine. We never ask a student how they learn. Our Agentic AI silently observes their natural interactions during their first video session.</p>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <h3 class="text-gradient">Behavioral Signals</h3>
+                <ul>
+                    <li><strong>Rewinds & Pauses:</strong> Indicates Auditory preference.</li>
+                    <li><strong>Panel Dwell Time:</strong> Which generated content do they stare at?</li>
+                    <li><strong>Quiz Speed:</strong> Active vs Reflective processing.</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3 class="text-gradient">Instant Adaptation</h3>
+                <ul>
+                    <li>Detects Visual, Auditory, Read/Write, or Kinesthetic styles.</li>
+                    <li>Reorders the UI instantly to prioritize their preferred format.</li>
+                    <li>Achieved within just <strong>45 seconds</strong> of usage.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 4: Generative AI at Work -->
+    <div class="slide">
+        <h2><span class="text-gradient">03.</span> The Generative Payload</h2>
+        
+        <p style="font-size: 1.25rem; margin-bottom: 2rem;">When a video opens, our Agentic AI autonomously orchestrates Google Gemini to generate 5 multimodal learning assets in parallel.</p>
+
+        <div class="grid-2">
+            <div class="card">
+                <h3>📝 The Summary</h3>
+                <p>For the <strong>Read/Write Learner</strong>. 5 structured, highly-condensed bullet points capturing core insights.</p>
+            </div>
+            <div class="card">
+                <h3>📄 The Transcript</h3>
+                <p>For the <strong>Auditory Learner</strong>. Timestamped, clickable lecture paragraphs that seek the video instantly.</p>
+            </div>
+            <div class="card">
+                <h3>🕸️ The Mindmap</h3>
+                <p>For the <strong>Visual Learner</strong>. An auto-generated SVG concept network linking ideas spatially.</p>
+            </div>
+            <div class="card">
+                <h3>🔀 The Flowchart</h3>
+                <p>For the <strong>Logical/Visual Learner</strong>. Step-by-step process diagrams rendered live.</p>
+            </div>
+            <div class="card">
+                <h3>🧪 Personalized Quizzes</h3>
+                <p>For the <strong>Kinesthetic Learner</strong>. Instantly generated MCQs with AI-powered explanations for every choice, evaluating understanding immediately.</p>
+            </div>
+            <div class="card">
+                <h3>📊 PPT Generation</h3>
+                <p>For <strong>Educators & Revision</strong>. Auto-converts the topic structure into a downloadable presentation slide deck with one click.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 5: Proactive Agentic Interventions -->
+    <div class="slide">
+        <h2><span class="text-gradient">04.</span> Proactive Micro-Interventions</h2>
+        
+        <p style="font-size: 1.25rem; margin-bottom: 2rem;">Course Curator AI doesn't just passively observe; it actively steps in when it detects friction, just like a human tutor.</p>
+
+        <div class="grid-2">
+            <div class="card">
+                <h3 class="text-gradient">Contextual Pause Analysis</h3>
+                <p>When a student pauses the video, a tiny, non-intrusive micro-prompt asks: <em>"Taking notes ✍️, Confused 🤔, or Bored 🥱?"</em> We instantly map their exact intent to their learning profile rather than guessing.</p>
+            </div>
+            <div class="card">
+                <h3 class="text-gradient">Answering Style Evaluation</h3>
+                <p>We track quiz response times and answer-changing behaviors to classify learners as <strong>Reflective</strong> (slow, accurate) or <strong>Active</strong> (fast, trial-and-error), adjusting the pace of future questions.</p>
+            </div>
+            <div class="card">
+                <h3 class="text-gradient">Dynamic Content Simplification</h3>
+                <p>If the Agentic AI detects confusion (via "Confused" pauses or failed quizzes), it autonomously regenerates the summary using <strong>"Explain Like I'm 5" (ELI5)</strong> analogies to bridge the knowledge gap.</p>
+            </div>
+            <div class="card">
+                <h3 class="text-gradient">The Agentic Study Buddy</h3>
+                <p>A proactive AI that intervenes right when needed: <em>"I noticed you struggled with the last concept. I just generated a simpler visual flowchart for that exact idea. Let's look at it."</em></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 6: The Agentic Pipeline -->
+    <div class="slide">
+        <h2><span class="text-gradient">05.</span> Generative vs. Agentic</h2>
+        
+        <div class="highlight-box" style="margin-bottom: 2rem;">
+            <h4>Generative AI creates content. Agentic AI takes action. We use both.</h4>
+        </div>
+
+        <div class="card">
+            <h3 style="color: var(--accent-cyan);">The Autonomous Orchestrator</h3>
+            <p style="margin-bottom: 1rem;">Most platforms use AI as a chatbot (Generative). We use AI as an orchestrator (Agentic).</p>
+            <ul>
+                <li><strong>Autonomous Trigger:</strong> The moment a video loads, the agent fires 5 parallel prompts to Gemini. No user input required.</li>
+                <li><strong>Self-Healing JSON:</strong> The agent demands strict JSON schemas. If the LLM hallucinates formatting, the agent catches it and retries autonomously.</li>
+                <li><strong>Fallback Strategy:</strong> If API limits are hit, the agent gracefully degrades to rich, pre-built offline mocks—ensuring zero downtime during demos.</li>
+                <li><strong>Profile Computation:</strong> The agent acts as a silent observer, calculating real-time engagement vectors to update the student's Learning Profile.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Slide 7: Future Vision & Scaling -->
+    <div class="slide">
+        <h2><span class="text-gradient">06.</span> Future Vision & Scaling</h2>
+        
+        <p style="font-size: 1.25rem; margin-bottom: 2rem;">Where Agentic AI takes Course Curator next: pushing the boundaries of autonomous education.</p>
+
+        <div class="grid-2">
+            <div class="card">
+                <h3 class="text-gradient">The "Self-Healing" Curriculum</h3>
+                <p>If a student fails a quiz, the AI identifies the missing prerequisite from a global knowledge graph and autonomously inserts a micro-lesson to bridge the gap.</p>
+            </div>
+            <div class="card">
+                <h3 class="text-gradient">Micro-Interaction Telemetry</h3>
+                <p>Beyond pauses, we will monitor cursor movements and scroll velocity. Erratic movements indicate frustration, allowing for deeper, biometric-free behavioral profiling.</p>
+            </div>
+            <div class="card">
+                <h3 class="text-gradient">AI-Orchestrated Peer Learning</h3>
+                <p>The AI compares learning profiles across users and autonomously pairs students with complementary strengths for a 5-minute collaborative "Boss Fight" challenge.</p>
+            </div>
+            <div class="card">
+                <h3 class="text-gradient">Cognitive Load Management</h3>
+                <p>If quiz speed drops, indicating burnout, the AI enforces a gamified 5-minute Pomodoro break, generating a personalized AI meme related to the topic to reset attention.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 8: Technology & Impact -->
+    <div class="slide">
+        <h2><span class="text-gradient">07.</span> Tech Stack & Impact</h2>
+        
+        <div class="grid-2">
+            <div class="card">
+                <h3>Technology Stack</h3>
+                <ul>
+                    <li><strong>Frontend:</strong> Next.js 14, React, Tailwind-style Vanilla CSS.</li>
+                    <li><strong>AI Engine:</strong> Google Gemini 1.5 Flash API.</li>
+                    <li><strong>State:</strong> Zustand (Persistent Local Storage).</li>
+                    <li><strong>Visuals:</strong> Custom interactive SVG renderers.</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>The Impact</h3>
+                <ul>
+                    <li><strong>Scale:</strong> Targets 250M+ students in India.</li>
+                    <li><strong>Cost Efficiency:</strong> ~₹0.02 API cost per video session.</li>
+                    <li><strong>Accessibility:</strong> Transcripts aid hearing-impaired; visual maps aid dyslexic learners.</li>
+                    <li><strong>SDG Alignment:</strong> UN Goal 4 — Quality Education.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="margin-top: 3rem; text-align: center;">
+            <h3 style="font-size: 2rem; color: white;">Course<span class="text-gradient">Curator</span> AI</h3>
+            <p style="color: var(--text-muted); margin-top: 0.5rem;">Ready for the HackArena 2.0 In-Person Prototype Round.</p>
+        </div>
+    </div>
+
+    <script>
+        // Simple script to auto-trigger print dialog if URL contains ?print=true
+        if (window.location.search.includes('print=true')) {
+            window.onload = () => window.print();
+        }
+    </script>
+</body>
+</html>
