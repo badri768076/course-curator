@@ -68,210 +68,223 @@ export default function DashboardPage() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }} className="animate-fade-in">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }} className="animate-fade-in">
       
-      {/* Top Banner */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid hsla(var(--border-glass))', paddingBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+      {/* Clean Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '1rem', borderBottom: '1px solid hsla(var(--border-glass))', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h1 style={{ fontSize: '2.25rem', fontWeight: 800 }}>Learning Workspace</h1>
-          <p style={{ color: 'hsl(var(--text-secondary))', fontSize: '0.95rem', marginTop: '0.25rem' }}>
-            {activeCourse ? `Actively studying: ${activeCourse.title}` : 'Select or curate a visual learning syllabus below'}
+          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, background: 'linear-gradient(135deg, hsl(var(--primary-violet)), hsl(var(--primary-cyan)))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            {activeCourse ? activeCourse.title : 'Course Curator'}
+          </h1>
+          <p style={{ color: 'hsl(var(--text-secondary))', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+            {activeCourse ? `${activeCourse.chapters.length} chapters • ${activeCourse.chapters.reduce((acc, ch) => acc + ch.topics.length, 0)} lessons` : 'Generate personalized learning paths with AI'}
           </p>
         </div>
         {courses.length > 0 && (
-          <Button variant="ghost" onClick={clearAll} style={{ color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
-            Reset Workspace
+          <Button variant="ghost" onClick={clearAll} style={{ color: 'hsl(var(--text-muted))', border: '1px solid hsla(var(--border-glass))', fontSize: '0.85rem', padding: '0.5rem 1rem' }}>
+            <RefreshCw size={14} style={{ marginRight: '0.5rem' }} /> Reset
           </Button>
         )}
       </div>
 
-      {/* Main Grid content */}
+      {/* Main Content */}
       {!activeCourse ? (
-        <Card style={{ maxWidth: '600px', margin: '3rem auto', textAlign: 'center', padding: '3rem 2rem' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
-            <div style={{ width: '60px', height: '60px', borderRadius: '14px', backgroundColor: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Sparkles size={28} color="hsl(var(--primary-violet))" />
+        <div style={{ maxWidth: '500px', margin: '4rem auto', textAlign: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
+            <div style={{ width: '80px', height: '80px', borderRadius: '20px', background: 'linear-gradient(135deg, hsla(var(--primary-violet) / 0.15), hsla(var(--primary-cyan) / 0.15))', border: '1px solid hsla(var(--border-glass))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Sparkles size={36} color="hsl(var(--primary-violet))" />
             </div>
+            
             <div>
-              <CardTitle style={{ fontSize: '1.5rem', fontWeight: 800 }}>Ready to curate?</CardTitle>
-              <CardDescription style={{ marginTop: '0.5rem', fontSize: '0.95rem' }}>
-                Enter any skill, topic, or field of study. Our AI engine will structure a complete roadmap complete with video references and interactive MCQ tests.
-              </CardDescription>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'white', marginBottom: '0.5rem' }}>Start Learning</h2>
+              <p style={{ color: 'hsl(var(--text-secondary))', fontSize: '0.9rem', lineHeight: '1.6' }}>
+                Enter any topic to generate a complete learning path with videos, quizzes, and interactive content.
+              </p>
             </div>
 
-            <form onSubmit={handleGenerate} style={{ width: '100%', position: 'relative', marginTop: '0.5rem' }}>
+            <form onSubmit={handleGenerate} style={{ width: '100%', position: 'relative' }}>
               <input
                 type="text"
-                placeholder="e.g. Machine Learning Essentials, Web Security..."
+                placeholder="React, Machine Learning, Python..."
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
                 disabled={loading}
                 className="input-field"
-                style={{ paddingRight: '120px' }}
+                style={{ 
+                  width: '100%', 
+                  padding: '1rem 1.25rem', 
+                  paddingRight: '140px',
+                  fontSize: '1rem',
+                  borderRadius: '12px',
+                }}
               />
               <button
                 type="submit"
                 disabled={loading || !topic.trim()}
                 style={{
                   position: 'absolute',
-                  right: '6px',
-                  top: '6px',
-                  height: '38px',
+                  right: '8px',
+                  top: '8px',
+                  height: '44px',
                   border: 'none',
                   background: 'linear-gradient(135deg, hsl(var(--primary-violet)), hsl(var(--primary-cyan)))',
                   color: '#fff',
-                  fontWeight: 'bold',
-                  padding: '0 1rem',
+                  fontWeight: 600,
+                  padding: '0 1.5rem',
                   borderRadius: '8px',
                   cursor: 'pointer',
-                  opacity: (loading || !topic.trim()) ? 0.6 : 1,
+                  opacity: (loading || !topic.trim()) ? 0.5 : 1,
+                  fontSize: '0.9rem',
                 }}
               >
-                {loading ? <Loader className="animate-spin" size={14} /> : 'Generate'}
+                {loading ? <Loader className="animate-spin" size={16} /> : 'Generate'}
               </button>
             </form>
 
-            {error && <p style={{ color: '#ef4444', fontSize: '0.85rem' }}>{error}</p>}
+            {error && (
+              <div style={{ padding: '0.75rem 1rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '8px', color: '#ef4444', fontSize: '0.85rem' }}>
+                {error}
+              </div>
+            )}
           </div>
-        </Card>
+        </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
-          {/* Stats Cards Section */}
-          <div className="grid-3">
-            <Card style={{ padding: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-              <div style={{ width: '46px', height: '46px', borderRadius: '10px', backgroundColor: 'rgba(0, 255, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <BarChart2 size={20} color="hsl(var(--primary-cyan))" />
+          {/* Compact Stats Bar */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+            <div className="glass-card" style={{ padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'linear-gradient(135deg, hsla(var(--primary-cyan) / 0.15), hsla(var(--primary-cyan) / 0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <BarChart2 size={18} color="hsl(var(--primary-cyan))" />
               </div>
               <div>
-                <h4 style={{ fontSize: '0.8rem', color: 'hsl(var(--text-secondary))', textTransform: 'uppercase' }}>Course Completion</h4>
-                <p style={{ fontSize: '1.5rem', fontWeight: 800 }}>{getCourseProgress(activeCourse.id)}%</p>
+                <p style={{ fontSize: '0.7rem', color: 'hsl(var(--text-muted))', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Progress</p>
+                <p style={{ fontSize: '1.25rem', fontWeight: 700, color: 'white' }}>{getCourseProgress(activeCourse.id)}%</p>
               </div>
-            </Card>
+            </div>
 
-            <Card style={{ padding: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-              <div style={{ width: '46px', height: '46px', borderRadius: '10px', backgroundColor: 'rgba(168, 85, 247, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <BookOpen size={20} color="hsl(var(--primary-violet))" />
+            <div className="glass-card" style={{ padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'linear-gradient(135deg, hsla(var(--primary-violet) / 0.15), hsla(var(--primary-violet) / 0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <BookOpen size={18} color="hsl(var(--primary-violet))" />
               </div>
               <div>
-                <h4 style={{ fontSize: '0.8rem', color: 'hsl(var(--text-secondary))', textTransform: 'uppercase' }}>Modules & Lessons</h4>
-                <p style={{ fontSize: '1.5rem', fontWeight: 800 }}>
-                  {activeCourse.chapters.reduce((acc, ch) => acc + ch.topics.length, 0)} Units
+                <p style={{ fontSize: '0.7rem', color: 'hsl(var(--text-muted))', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Lessons</p>
+                <p style={{ fontSize: '1.25rem', fontWeight: 700, color: 'white' }}>
+                  {activeCourse.chapters.reduce((acc, ch) => acc + ch.topics.length, 0)}
                 </p>
               </div>
-            </Card>
+            </div>
 
-            <Card style={{ padding: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-              <div style={{ width: '46px', height: '46px', borderRadius: '10px', backgroundColor: 'rgba(34, 197, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <CheckCircle2 size={20} color="#22c55e" />
+            <div className="glass-card" style={{ padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'linear-gradient(135deg, hsla(142, 76%, 36%, 0.15), hsla(142, 76%, 36%, 0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <CheckCircle2 size={18} color="#22c55e" />
               </div>
               <div>
-                <h4 style={{ fontSize: '0.8rem', color: 'hsl(var(--text-secondary))', textTransform: 'uppercase' }}>Overall Quiz Badges</h4>
-                <p style={{ fontSize: '1.5rem', fontWeight: 800 }}>
+                <p style={{ fontSize: '0.7rem', color: 'hsl(var(--text-muted))', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Quizzes</p>
+                <p style={{ fontSize: '1.25rem', fontWeight: 700, color: 'white' }}>
                   {activeCourse.chapters.reduce((acc, ch) => {
                     return acc + ch.topics.filter(t => getTopicState(t.slug).quizScore >= 0).length;
-                  }, 0)} Scored
+                  }, 0)}
                 </p>
               </div>
-            </Card>
+            </div>
           </div>
 
-          {/* Map Layout: Left (Interactive map) Right (List Modules) */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: '2rem' }}>
+          {/* Main Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '1.5rem' }}>
             
-            {/* Mindmap Box */}
+            {/* Left: Mindmap + Quick Generate */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <MindmapRenderer
-                course={activeCourse}
-                activeTopicSlug={null}
-                onNodeClick={handleNodeClick}
-              />
+              <div className="glass-card" style={{ padding: '1.5rem', borderRadius: '16px' }}>
+                <MindmapRenderer
+                  course={activeCourse}
+                  activeTopicSlug={null}
+                  onNodeClick={handleNodeClick}
+                />
+              </div>
               
-              {/* Quick Generator Box */}
-              <Card style={{ padding: '1.5rem' }}>
-                <CardHeader style={{ marginBottom: '0.75rem' }}>
-                  <CardTitle style={{ fontSize: '1.1rem' }}>Curate Another Subject</CardTitle>
-                </CardHeader>
+              <div className="glass-card" style={{ padding: '1.25rem', borderRadius: '16px' }}>
+                <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white', marginBottom: '0.75rem' }}>Generate New Course</p>
                 <form onSubmit={handleGenerate} style={{ display: 'flex', gap: '0.75rem' }}>
                   <input
                     type="text"
-                    placeholder="Enter new skill topic..."
+                    placeholder="New topic..."
                     value={topic}
                     onChange={(e) => setTopic(e.target.value)}
                     disabled={loading}
                     className="input-field"
-                    style={{ flex: 1, padding: '0.65rem 1rem', fontSize: '0.85rem' }}
+                    style={{ flex: 1, padding: '0.6rem 1rem', fontSize: '0.85rem', borderRadius: '8px' }}
                   />
-                  <Button type="submit" disabled={loading || !topic.trim()} size="sm">
-                    {loading ? <Loader className="animate-spin" size={14} /> : 'Generate'}
+                  <Button type="submit" disabled={loading || !topic.trim()} size="sm" style={{ borderRadius: '8px' }}>
+                    {loading ? <Loader className="animate-spin" size={14} /> : <Sparkles size={14} />}
                   </Button>
                 </form>
-              </Card>
+              </div>
             </div>
 
-            {/* Syllabus Chapters List */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <Card style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '1.5rem' }}>
-                <CardTitle style={{ fontSize: '1.2rem', fontWeight: 700 }}>Syllabus Outline</CardTitle>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxHeight: '480px', overflowY: 'auto' }}>
-                  {activeCourse.chapters.map((chapter, chIdx) => (
-                    <div key={chapter.slug} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                      <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'white', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                        <span style={{ color: 'hsl(var(--primary-violet))' }}>0{chIdx + 1}.</span>
-                        {chapter.title}
-                      </h4>
-                      
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', paddingLeft: '1rem' }}>
-                        {chapter.topics.map((topic) => {
-                          const state = getTopicState(topic.slug);
-                          return (
-                            <div
-                              key={topic.slug}
-                              style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                padding: '0.75rem 1rem',
-                                borderRadius: '10px',
-                                background: 'rgba(255,255,255,0.02)',
-                                border: '1px solid hsla(var(--border-glass))',
-                              }}
-                            >
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                {state.completed ? (
-                                  <CheckCircle2 size={16} color="#22c55e" />
-                                ) : (
-                                  <Circle size={16} color="hsl(var(--text-muted))" />
-                                )}
-                                <span style={{ fontSize: '0.875rem', color: state.completed ? 'white' : 'hsl(var(--text-secondary))', fontWeight: state.completed ? '600' : 'normal' }}>
-                                  {topic.title}
-                                </span>
-                              </div>
-
-                              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleNodeClick(topic.slug)}
-                                  style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}
-                                >
-                                  Study
-                                </Button>
-                                {state.quizScore >= 0 && (
-                                  <span style={{ fontSize: '0.75rem', alignSelf: 'center', color: '#22c55e', fontWeight: 'bold', padding: '0.25rem 0.5rem', backgroundColor: 'rgba(34,197,94,0.1)', borderRadius: '6px' }}>
-                                    Score: {state.quizScore}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
+            {/* Right: Course Outline */}
+            <div className="glass-card" style={{ padding: '1.5rem', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <p style={{ fontSize: '0.85rem', fontWeight: 700, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Course Outline</p>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '500px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                {activeCourse.chapters.map((chapter, chIdx) => (
+                  <div key={chapter.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ 
+                        width: '24px', height: '24px', borderRadius: '6px', 
+                        background: 'linear-gradient(135deg, hsl(var(--primary-violet)), hsl(var(--primary-cyan)))',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '0.7rem', fontWeight: 700, color: 'white'
+                      }}>
+                        {chIdx + 1}
+                      </span>
+                      <h4 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'white' }}>{chapter.title}</h4>
                     </div>
-                  ))}
-                </div>
-              </Card>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', paddingLeft: '2rem' }}>
+                      {chapter.topics.map((topic) => {
+                        const state = getTopicState(topic.slug);
+                        return (
+                          <button
+                            key={topic.slug}
+                            onClick={() => handleNodeClick(topic.slug)}
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              padding: '0.6rem 0.85rem',
+                              borderRadius: '8px',
+                              background: 'rgba(255,255,255,0.03)',
+                              border: '1px solid hsla(var(--border-glass))',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s',
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                            onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                              {state.completed ? (
+                                <CheckCircle2 size={14} color="#22c55e" />
+                              ) : (
+                                <Circle size={14} color="hsl(var(--text-muted))" />
+                              )}
+                              <span style={{ fontSize: '0.8rem', color: state.completed ? 'white' : 'hsl(var(--text-secondary))' }}>
+                                {topic.title}
+                              </span>
+                            </div>
+
+                            {state.quizScore >= 0 && (
+                              <span style={{ fontSize: '0.7rem', color: '#22c55e', fontWeight: 600, padding: '0.2rem 0.5rem', background: 'rgba(34,197,94,0.1)', borderRadius: '6px' }}>
+                                {state.quizScore}%
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
             
           </div>

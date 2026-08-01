@@ -1,3 +1,5 @@
+// store/use-learning-store.ts
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Course } from '@/types/ai-output';
@@ -26,14 +28,23 @@ interface LearningStore {
   learningProfile: LearningProfile;
   eli5Unlocked: Record<string, boolean>;
 
+  // Course Management
   addCourse: (course: Course) => void;
   setActiveCourse: (courseId: string) => void;
   setActiveTopic: (topicSlug: string | null) => void;
+  removeCourse: (courseId: string) => void;
+  removeAllCourses: () => void;
+  
+  // Progress Management
   markTopicCompleted: (courseId: string, topicSlug: string, completed: boolean) => void;
   updateVideoTime: (courseId: string, topicSlug: string, time: number) => void;
   saveQuizScore: (courseId: string, topicSlug: string, score: number) => void;
   clearAll: () => void;
+  
+  // Video Analysis Cache
   cacheVideoAnalysis: (topicSlug: string, result: VideoAnalysisResult) => void;
+  
+  // Video Event Tracking
   recordVideoEvent: (type: 'pause' | 'rewind' | 'skip') => void;
   recordPanelTime: (panelName: string, ms: number) => void;
   recordQuizAttemptSpeed: (secondsPerQuestion: number) => void;
@@ -42,11 +53,37 @@ interface LearningStore {
   unlockEli5: (topicSlug: string) => void;
   computeAndUpdateStyle: () => LearningStyle;
 
-  // NEW: Time tracking
+  // Time Tracking
   totalTimeSpent: number;
   updateTimeSpent: (courseId: string, topicSlug: string, seconds: number) => Promise<void>;
   fetchTotalTime: () => Promise<void>;
 }
+
+// ============================================
+// VIDEO EVENT POINTS
+// ============================================
+
+const VIDEO_EVENT_POINTS: Record<string, Partial<Record<ScoredStyle, number>>> = {
+  pause: { auditory: 3 },
+  rewind: { auditory: 6 },
+  skip: { kinesthetic: 2 },
+};
+
+// ============================================
+// PANEL STYLE WEIGHTS
+// ============================================
+
+const PANEL_STYLE_WEIGHTS: Record<string, Partial<Record<ScoredStyle, number>>> = {
+  summary: { 'read-write': 1.0 },
+  transcript: { auditory: 1.0, 'read-write': 0.3 },
+  mindmap: { visual: 1.2 },
+  flowchart: { visual: 1.2 },
+  quiz: { kinesthetic: 1.5 },
+};
+
+// ============================================
+// COMPUTE LEARNING STYLE
+// ============================================
 
 function computeStyle(profile: LearningProfile): LearningStyle {
   const MIN_ENGAGEMENT_MS = 45_000;
@@ -62,23 +99,14 @@ function computeStyle(profile: LearningProfile): LearningStyle {
   return top[0] as LearningStyle;
 }
 
-const VIDEO_EVENT_POINTS: Record<string, Partial<Record<ScoredStyle, number>>> = {
-  pause: { auditory: 3 },
-  rewind: { auditory: 6 },
-  skip: { kinesthetic: 2 },
-};
-
-const PANEL_STYLE_WEIGHTS: Record<string, Partial<Record<ScoredStyle, number>>> = {
-  summary: { 'read-write': 1.0 },
-  transcript: { auditory: 1.0, 'read-write': 0.3 },
-  mindmap: { visual: 1.2 },
-  flowchart: { visual: 1.2 },
-  quiz: { kinesthetic: 1.5 },
-};
+// ============================================
+// ZUSTAND STORE
+// ============================================
 
 export const useLearningStore = create<LearningStore>()(
   persist(
     (set, get) => ({
+      // ── Initial State ──
       courses: [],
       activeCourseId: null,
       activeTopicSlug: null,
@@ -86,8 +114,9 @@ export const useLearningStore = create<LearningStore>()(
       videoAnalyses: {},
       learningProfile: { ...DEFAULT_LEARNING_PROFILE },
       eli5Unlocked: {},
-      totalTimeSpent: 0, // NEW
+      totalTimeSpent: 0,
 
+      // ── Course Management ──
       addCourse: (course) =>
         set((state) => {
           const exists = state.courses.some((c) => c.slug === course.slug);
@@ -105,6 +134,55 @@ export const useLearningStore = create<LearningStore>()(
 
       setActiveTopic: (topicSlug) => set({ activeTopicSlug: topicSlug }),
 
+      // ── Course Removal ──
+      removeCourse: (courseId) =>
+        set((state) => {
+          const updatedCourses = state.courses.filter((c) => c.id !== courseId);
+          const newActiveId = state.activeCourseId === courseId 
+            ? (updatedCourses.length > 0 ? updatedCourses[0].id : null)
+            : state.activeCourseId;
+          
+          // Also remove associated progress
+          const updatedProgress = { ...state.progress };
+          Object.keys(updatedProgress).forEach((key) => {
+            if (key.startsWith(`${courseId}:`)) {
+              delete updatedProgress[key];
+            }
+          });
+          
+          // Remove associated video analyses
+          const updatedVideoAnalyses = { ...state.videoAnalyses };
+          const course = state.courses.find((c) => c.id === courseId);
+          if (course) {
+            course.chapters.forEach((chapter) => {
+              chapter.topics.forEach((topic) => {
+                if (updatedVideoAnalyses[topic.slug]) {
+                  delete updatedVideoAnalyses[topic.slug];
+                }
+              });
+            });
+          }
+          
+          return {
+            courses: updatedCourses,
+            activeCourseId: newActiveId,
+            activeTopicSlug: newActiveId ? null : state.activeTopicSlug,
+            progress: updatedProgress,
+            videoAnalyses: updatedVideoAnalyses,
+          };
+        }),
+
+      removeAllCourses: () =>
+        set({
+          courses: [],
+          activeCourseId: null,
+          activeTopicSlug: null,
+          progress: {},
+          videoAnalyses: {},
+          eli5Unlocked: {},
+        }),
+
+      // ── Progress Management ──
       markTopicCompleted: (courseId, topicSlug, completed) =>
         set((state) => {
           const key = `${courseId}:${topicSlug}`;
@@ -150,14 +228,16 @@ export const useLearningStore = create<LearningStore>()(
           videoAnalyses: {},
           learningProfile: { ...DEFAULT_LEARNING_PROFILE },
           eli5Unlocked: {},
-          totalTimeSpent: 0, // NEW
+          totalTimeSpent: 0,
         }),
 
+      // ── Video Analysis Cache ──
       cacheVideoAnalysis: (topicSlug, result) =>
         set((state) => ({
           videoAnalyses: { ...state.videoAnalyses, [topicSlug]: result },
         })),
 
+      // ── Video Event Tracking ──
       recordVideoEvent: (type) =>
         set((state) => {
           const profile = { ...state.learningProfile };
@@ -178,6 +258,7 @@ export const useLearningStore = create<LearningStore>()(
           return { learningProfile: updatedProfile };
         }),
 
+      // ── Panel Time Tracking ──
       recordPanelTime: (panelName, ms) =>
         set((state) => {
           const profile = { ...state.learningProfile };
@@ -205,6 +286,7 @@ export const useLearningStore = create<LearningStore>()(
           return { learningProfile: updatedProfile };
         }),
 
+      // ── Quiz Attempt Speed Tracking ──
       recordQuizAttemptSpeed: (secondsPerQuestion) =>
         set((state) => {
           const profile = { ...state.learningProfile };
@@ -221,6 +303,7 @@ export const useLearningStore = create<LearningStore>()(
           return { learningProfile: updatedProfile };
         }),
 
+      // ── Pause Reason Tracking ──
       recordPauseReason: (topicSlug, reason) =>
         set((state) => {
           const profile = { ...state.learningProfile };
@@ -254,6 +337,7 @@ export const useLearningStore = create<LearningStore>()(
           };
         }),
 
+      // ── Quiz Attempt Details Tracking ──
       recordQuizAttemptDetails: (topicSlug, secondsPerQuestion, changeCount) =>
         set((state) => {
           const profile = { ...state.learningProfile };
@@ -302,11 +386,13 @@ export const useLearningStore = create<LearningStore>()(
           };
         }),
 
+      // ── ELI5 Unlock ──
       unlockEli5: (topicSlug) =>
         set((state) => ({
           eli5Unlocked: { ...state.eli5Unlocked, [topicSlug]: true },
         })),
 
+      // ── Compute and Update Style ──
       computeAndUpdateStyle: () => {
         const profile = get().learningProfile;
         const style = computeStyle(profile);
@@ -316,7 +402,7 @@ export const useLearningStore = create<LearningStore>()(
         return style;
       },
 
-      // NEW time tracking methods
+      // ── Time Tracking ──
       updateTimeSpent: async (courseId, topicSlug, seconds) => {
         try {
           await fetch('/api/track-time', {
@@ -340,6 +426,18 @@ export const useLearningStore = create<LearningStore>()(
         }
       },
     }),
-    { name: 'course-curator-storage' }
+    { 
+      name: 'course-curator-storage',
+      partialize: (state) => ({
+        courses: state.courses,
+        activeCourseId: state.activeCourseId,
+        activeTopicSlug: state.activeTopicSlug,
+        progress: state.progress,
+        videoAnalyses: state.videoAnalyses,
+        learningProfile: state.learningProfile,
+        eli5Unlocked: state.eli5Unlocked,
+        totalTimeSpent: state.totalTimeSpent,
+      }),
+    }
   )
 );

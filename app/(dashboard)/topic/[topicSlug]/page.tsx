@@ -137,23 +137,16 @@ export default function TopicPage({ params }: { params: { topicSlug: string } })
         </span>
       </div>
 
-      {/* ── Three-column workspace ────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr 1.65fr', gap: '1.5rem', alignItems: 'start' }}>
+      {/* ── Main Layout: Video Centered, Concepts Right ────────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '200px minmax(500px, 1fr) 400px', gap: '1.5rem', alignItems: 'start' }}>
 
-        {/* LEFT: Course navigation mindmap */}
+        {/* LEFT: Course navigation */}
         <div style={{ position: 'sticky', top: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <MindmapRenderer
-            course={activeCourse}
-            activeTopicSlug={currentSlug}
-            onNodeClick={handleNodeClick}
-          />
-
-          {/* Chapter/topic list mini-nav */}
           <div className="glass-card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <p style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'hsl(var(--text-muted))' }}>Course Outline</p>
+            <p style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'hsl(var(--text-muted))', fontWeight: 700 }}>Course Navigation</p>
             {activeCourse.chapters.map((ch) => (
-              <div key={ch.slug}>
-                <p style={{ fontSize: '0.72rem', fontWeight: 800, color: '#1f2937', marginBottom: '0.35rem' }}>{ch.title}</p>
+              <div key={ch.id}>
+                <p style={{ fontSize: '0.8rem', fontWeight: 700, color: 'white', marginBottom: '0.5rem', marginTop: '0.75rem' }}>{ch.title}</p>
                 {ch.topics.map((t) => {
                   const done = progress[`${activeCourse.id}:${t.slug}`]?.completed;
                   const active = t.slug === currentSlug;
@@ -162,16 +155,19 @@ export default function TopicPage({ params }: { params: { topicSlug: string } })
                       key={t.slug}
                       onClick={() => handleNodeClick(t.slug)}
                       style={{
-                        display: 'flex', alignItems: 'center', gap: '0.4rem',
-                        width: '100%', textAlign: 'left', padding: '0.45rem 0.6rem',
-                        borderRadius: '6px', border: 'none',
-                        background: active ? 'hsla(var(--primary-violet) / 0.12)' : 'transparent',
-                        color: active ? 'hsl(var(--primary-violet))' : done ? 'hsl(var(--primary-cyan))' : '#4b5563',
-                        fontSize: '0.78rem', cursor: 'pointer',
-                        fontWeight: active ? 700 : 500,
+                        display: 'flex', alignItems: 'center', gap: '0.5rem',
+                        width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem',
+                        borderRadius: '8px', border: 'none',
+                        background: active ? 'linear-gradient(135deg, hsla(var(--primary-violet) / 0.2), hsla(var(--primary-cyan) / 0.1))' : 'transparent',
+                        color: active ? 'white' : done ? 'hsl(var(--primary-cyan))' : 'hsl(var(--text-secondary))',
+                        fontSize: '0.8rem', cursor: 'pointer',
+                        fontWeight: active ? 600 : 400,
+                        transition: 'all 0.2s',
                       }}
+                      onMouseOver={(e) => !active && (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+                      onMouseOut={(e) => !active && (e.currentTarget.style.background = 'transparent')}
                     >
-                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: done ? 'hsl(var(--primary-cyan))' : active ? 'hsl(var(--primary-violet))' : 'rgba(148,163,184,0.3)', flexShrink: 0 }} />
+                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: done ? 'hsl(var(--primary-cyan))' : active ? 'hsl(var(--primary-violet))' : 'rgba(148,163,184,0.3)', flexShrink: 0 }} />
                       {t.title}
                     </button>
                   );
@@ -181,11 +177,11 @@ export default function TopicPage({ params }: { params: { topicSlug: string } })
           </div>
         </div>
 
-        {/* CENTRE: Video player */}
+        {/* CENTER: Video player - Main focus */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', position: 'sticky', top: '1.5rem', alignSelf: 'start' }}>
-          {activeTopic.videoUrl ? (
+          {activeTopic.videoId ? (
             <VideoPlayer
-              videoId={activeTopic.videoUrl}
+              videoId={activeTopic.videoId}
               initialTime={initialTime}
               onTimeUpdate={syncVideoTime}
               onVideoEvent={handleVideoEvent}
@@ -193,33 +189,34 @@ export default function TopicPage({ params }: { params: { topicSlug: string } })
               seekTo={seekTo}
             />
           ) : (
-            <div className="glass-card" style={{ padding: '2rem', textAlign: 'center', color: 'hsl(var(--text-muted))' }}>
-              No video available for this topic.
+            <div className="glass-card" style={{ padding: '3rem', textAlign: 'center', color: 'hsl(var(--text-muted))' }}>
+              <AlertCircle size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
+              <p style={{ fontSize: '0.9rem' }}>No video available for this topic.</p>
             </div>
           )}
 
-          {/* Behaviour hint strip */}
-          <div className="glass-card" style={{ padding: '0.75rem 1rem', display: 'flex', gap: '1.5rem', fontSize: '0.75rem', color: 'hsl(var(--text-muted))' }}>
-            <span>⏸ Pause/rewind → we learn you prefer replaying</span>
-            <span>📑 Switch tabs → we learn your format preference</span>
+          {/* Topic info card */}
+          <div className="glass-card" style={{ padding: '1.25rem' }}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', marginBottom: '0.5rem' }}>{activeTopic.title}</h3>
+            <p style={{ fontSize: '0.85rem', color: 'hsl(var(--text-secondary))', lineHeight: '1.5' }}>{activeTopic.description}</p>
           </div>
         </div>
 
-        {/* RIGHT: Adaptive 5-tab panel */}
-        <div style={{ minWidth: 0 }}>
-          {activeTopic.videoUrl ? (
+        {/* RIGHT: Concepts & Learning Panel */}
+        <div style={{ minWidth: 0, position: 'sticky', top: '1.5rem' }}>
+          {activeTopic.videoId ? (
             <AdaptivePanel
               courseId={courseId}
               topicSlug={currentSlug}
               topicTitle={activeTopic.title}
-              videoId={activeTopic.videoUrl}
+              videoId={activeTopic.videoId}
               isCompleted={isCompleted}
               onToggleComplete={handleToggleComplete}
               onSeekVideo={handleSeekVideo}
             />
           ) : (
             <div className="glass-card" style={{ padding: '2rem', color: 'hsl(var(--text-muted))' }}>
-              Content panel available once a video is assigned.
+              Learning content will appear once a video is assigned.
             </div>
           )}
         </div>

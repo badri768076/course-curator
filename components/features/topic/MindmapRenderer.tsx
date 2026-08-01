@@ -43,7 +43,7 @@ export function MindmapRenderer({ course, activeTopicSlug, onNodeClick }: Mindma
         </div>
       </div>
 
-      <div style={{ position: 'relative', width: '100%', height: '420px', backgroundColor: '#1A0F14', borderRadius: '12px', border: '2px solid hsla(var(--primary-magenta) / 0.5)', overflow: 'auto', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.5)' }}>
+      <div style={{ position: 'relative', width: '100%', height: '420px', backgroundColor: 'hsla(45, 20%, 95%, 0.8)', borderRadius: '12px', border: '2px solid hsla(var(--primary-magenta) / 0.5)', overflow: 'auto', boxShadow: 'inset 0 0 20px hsla(var(--border-glass) / 0.3)' }}>
         <svg
           width="100%"
           height="100%"
@@ -175,14 +175,14 @@ export function MindmapRenderer({ course, activeTopicSlug, onNodeClick }: Mindma
                   x={node.x}
                   y={node.y + r + 15}
                   textAnchor="middle"
-                  fill={isActive ? 'hsl(var(--primary-cyan))' : 'white'}
+                  fill={isActive ? 'hsl(var(--primary-violet))' : 'hsl(var(--text-primary))'}
                   fontSize={node.type === 'root' ? '12px' : '10px'}
                   fontWeight={isActive || node.type === 'root' ? 'bold' : 'normal'}
                   style={{
                     fontFamily: 'var(--font-title)',
                     pointerEvents: 'none',
                     userSelect: 'none',
-                    textShadow: '0 2px 4px rgba(0,0,0,0.9)'
+                    textShadow: '0 1px 2px rgba(255,255,255,0.8)'
                   }}
                 >
                   {node.label.length > 20 ? `${node.label.substring(0, 17)}...` : node.label}
