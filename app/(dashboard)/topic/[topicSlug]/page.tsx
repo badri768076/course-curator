@@ -8,10 +8,11 @@ import { VideoPlayer } from '@/components/features/video/VideoPlayer';
 import { AdaptivePanel } from '@/components/features/video/AdaptivePanel';
 import { LearningStyleBadge } from '@/components/features/video/LearningStyleBadge';
 import { StudyBuddy } from '@/components/features/video/StudyBuddy';
+import { VideoChatbot } from '@/components/features/video/VideoChatbot';
 import { Button } from '@/components/ui/button';
 import { Card, CardTitle, CardDescription } from '@/components/ui/card';
 import { useVideoSync } from '@/hooks/use-video-sync';
-import { ArrowLeft, BookOpen, AlertCircle } from 'lucide-react';
+import { ArrowLeft, BookOpen, AlertCircle, MessageSquare } from 'lucide-react';
 import { ROUTES } from '@/constants/routes';
 
 export default function TopicPage({ params }: { params: { topicSlug: string } }) {
@@ -32,6 +33,9 @@ export default function TopicPage({ params }: { params: { topicSlug: string } })
 
   // Seek state — driven by transcript timestamp clicks in AdaptivePanel
   const [seekTo, setSeekTo] = useState<number | null>(null);
+  
+  // Chatbot state
+  const [showChatbot, setShowChatbot] = useState(false);
 
   /* ── Find topic (computed, no early return) ─────────────────── */
   let activeTopic: any = null;
@@ -122,110 +126,164 @@ export default function TopicPage({ params }: { params: { topicSlug: string } })
 
   /* ── Render ───────────────────────────────────────────────────── */
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }} className="animate-fade-in">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', padding: '0' }} className="animate-fade-in">
 
-      {/* Breadcrumb nav */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid hsla(var(--border-glass))', paddingBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+      {/* Minimal Header */}
+      <div style={{ display: 'flex', alignItems: 'center', padding: '1rem 2rem', borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(0,0,0,0.2)' }}>
         <button
           onClick={() => router.push(ROUTES.dashboard)}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: 'hsl(var(--text-secondary))', cursor: 'pointer', fontSize: '0.875rem' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: 'hsl(var(--text-secondary))', cursor: 'pointer', fontSize: '0.85rem', padding: '0.5rem 0.75rem', borderRadius: '6px' }}
+          onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+          onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
         >
-          <ArrowLeft size={15} /> Dashboard
+          <ArrowLeft size={16} />
+          <span>Back</span>
         </button>
-        <span style={{ fontSize: '0.8rem', color: 'hsl(var(--text-muted))', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-          <BookOpen size={13} /> {activeCourse.title} / {activeTopic.title}
-        </span>
+        <div style={{ marginLeft: 'auto', fontSize: '0.85rem', color: 'hsl(var(--text-muted))' }}>
+          {activeTopic.title}
+        </div>
       </div>
 
       {/* ── Main Layout: Video Centered, Concepts Right ────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '200px minmax(500px, 1fr) 400px', gap: '1.5rem', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr 380px', gap: '0', flex: 1, overflow: 'hidden' }}>
 
-        {/* LEFT: Course navigation */}
-        <div style={{ position: 'sticky', top: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div className="glass-card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <p style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'hsl(var(--text-muted))', fontWeight: 700 }}>Course Navigation</p>
-            {activeCourse.chapters.map((ch) => (
-              <div key={ch.id}>
-                <p style={{ fontSize: '0.8rem', fontWeight: 700, color: 'white', marginBottom: '0.5rem', marginTop: '0.75rem' }}>{ch.title}</p>
-                {ch.topics.map((t) => {
-                  const done = progress[`${activeCourse.id}:${t.slug}`]?.completed;
-                  const active = t.slug === currentSlug;
-                  return (
-                    <button
-                      key={t.slug}
-                      onClick={() => handleNodeClick(t.slug)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '0.5rem',
-                        width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem',
-                        borderRadius: '8px', border: 'none',
-                        background: active ? 'linear-gradient(135deg, hsla(var(--primary-violet) / 0.2), hsla(var(--primary-cyan) / 0.1))' : 'transparent',
-                        color: active ? 'white' : done ? 'hsl(var(--primary-cyan))' : 'hsl(var(--text-secondary))',
-                        fontSize: '0.8rem', cursor: 'pointer',
-                        fontWeight: active ? 600 : 400,
-                        transition: 'all 0.2s',
-                      }}
-                      onMouseOver={(e) => !active && (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
-                      onMouseOut={(e) => !active && (e.currentTarget.style.background = 'transparent')}
-                    >
-                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: done ? 'hsl(var(--primary-cyan))' : active ? 'hsl(var(--primary-violet))' : 'rgba(148,163,184,0.3)', flexShrink: 0 }} />
-                      {t.title}
-                    </button>
-                  );
-                })}
-              </div>
-            ))}
+        {/* LEFT: Course navigation - Minimal */}
+        <div style={{ borderRight: '1px solid rgba(255,255,255,0.08)', padding: '1.5rem 1rem', overflowY: 'auto', background: 'rgba(0,0,0,0.1)' }}>
+          <div style={{ marginBottom: '1.5rem' }}>
+            <h2 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'white', marginBottom: '0.25rem' }}>{activeCourse.title}</h2>
+            <p style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))' }}>{activeCourse.chapters.length} chapters</p>
           </div>
+          
+          {activeCourse.chapters.map((ch) => (
+            <div key={ch.id} style={{ marginBottom: '1.5rem' }}>
+              <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'hsl(var(--text-muted))', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {ch.title}
+              </p>
+              {ch.topics.map((t) => {
+                const done = progress[`${activeCourse.id}:${t.slug}`]?.completed;
+                const active = t.slug === currentSlug;
+                return (
+                  <button
+                    key={t.slug}
+                    onClick={() => handleNodeClick(t.slug)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '0.5rem',
+                      width: '100%', textAlign: 'left', padding: '0.6rem 0.75rem',
+                      borderRadius: '6px', border: 'none',
+                      background: active ? 'rgba(255,255,255,0.08)' : 'transparent',
+                      color: active ? 'white' : done ? 'hsl(var(--text-muted))' : 'hsl(var(--text-muted))',
+                      fontSize: '0.8rem', cursor: 'pointer',
+                      marginBottom: '0.25rem',
+                      transition: 'background 0.15s',
+                    }}
+                    onMouseOver={(e) => !active && (e.currentTarget.style.background = 'rgba(255,255,255,0.03)')}
+                    onMouseOut={(e) => !active && (e.currentTarget.style.background = 'transparent')}
+                  >
+                    {done && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />}
+                    <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.title}</span>
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </div>
 
-        {/* CENTER: Video player - Main focus */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', position: 'sticky', top: '1.5rem', alignSelf: 'start' }}>
+        {/* CENTER: Video player - Centered on screen */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', background: 'rgba(0,0,0,0.3)', overflow: 'auto' }}>
           {activeTopic.videoId ? (
-            <VideoPlayer
-              videoId={activeTopic.videoId}
-              initialTime={initialTime}
-              onTimeUpdate={syncVideoTime}
-              onVideoEvent={handleVideoEvent}
-              onPauseReasonSubmitted={handlePauseReason}
-              seekTo={seekTo}
-            />
+            <div style={{ width: '100%', maxWidth: '900px' }}>
+              <VideoPlayer
+                videoId={activeTopic.videoId}
+                initialTime={initialTime}
+                onTimeUpdate={syncVideoTime}
+                onVideoEvent={handleVideoEvent}
+                onPauseReasonSubmitted={handlePauseReason}
+                seekTo={seekTo}
+              />
+              <div style={{ marginTop: '1.5rem', padding: '0 1rem' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'white', marginBottom: '0.5rem' }}>{activeTopic.title}</h2>
+                <p style={{ fontSize: '0.9rem', color: 'hsl(var(--text-muted))', lineHeight: '1.6' }}>{activeTopic.description}</p>
+              </div>
+            </div>
           ) : (
-            <div className="glass-card" style={{ padding: '3rem', textAlign: 'center', color: 'hsl(var(--text-muted))' }}>
-              <AlertCircle size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
-              <p style={{ fontSize: '0.9rem' }}>No video available for this topic.</p>
+            <div style={{ textAlign: 'center', color: 'hsl(var(--text-muted))' }}>
+              <AlertCircle size={48} style={{ margin: '0 auto 1rem', opacity: 0.4 }} />
+              <p style={{ fontSize: '0.9rem' }}>No video available</p>
             </div>
           )}
-
-          {/* Topic info card */}
-          <div className="glass-card" style={{ padding: '1.25rem' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', marginBottom: '0.5rem' }}>{activeTopic.title}</h3>
-            <p style={{ fontSize: '0.85rem', color: 'hsl(var(--text-secondary))', lineHeight: '1.5' }}>{activeTopic.description}</p>
-          </div>
         </div>
 
         {/* RIGHT: Concepts & Learning Panel */}
-        <div style={{ minWidth: 0, position: 'sticky', top: '1.5rem' }}>
+        <div style={{ borderLeft: '1px solid rgba(255,255,255,0.08)', padding: '1.5rem', overflowY: 'auto', background: 'rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column' }}>
+          {/* Toggle between Adaptive Panel and Chatbot */}
+          {activeTopic.videoId && (
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+              <button
+                onClick={() => setShowChatbot(false)}
+                style={{
+                  flex: 1,
+                  padding: '0.5rem',
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: !showChatbot ? 'rgba(255,255,255,0.1)' : 'transparent',
+                  color: !showChatbot ? 'white' : 'hsl(var(--text-muted))',
+                  cursor: 'pointer',
+                  fontSize: '0.8rem',
+                  fontWeight: 500,
+                }}
+              >
+                Learning
+              </button>
+              <button
+                onClick={() => setShowChatbot(true)}
+                style={{
+                  flex: 1,
+                  padding: '0.5rem',
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: showChatbot ? 'rgba(255,255,255,0.1)' : 'transparent',
+                  color: showChatbot ? 'white' : 'hsl(var(--text-muted))',
+                  cursor: 'pointer',
+                  fontSize: '0.8rem',
+                  fontWeight: 500,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.25rem',
+                }}
+              >
+                <MessageSquare size={14} />
+                AI Assistant
+              </button>
+            </div>
+          )}
+          
           {activeTopic.videoId ? (
-            <AdaptivePanel
-              courseId={courseId}
-              topicSlug={currentSlug}
-              topicTitle={activeTopic.title}
-              videoId={activeTopic.videoId}
-              isCompleted={isCompleted}
-              onToggleComplete={handleToggleComplete}
-              onSeekVideo={handleSeekVideo}
-            />
+            showChatbot ? (
+              <VideoChatbot
+                videoId={activeTopic.videoId}
+                videoTitle={activeTopic.title}
+                isOpen={showChatbot}
+              />
+            ) : (
+              <AdaptivePanel
+                courseId={courseId}
+                topicSlug={currentSlug}
+                topicTitle={activeTopic.title}
+                videoId={activeTopic.videoId}
+                isCompleted={isCompleted}
+                onToggleComplete={handleToggleComplete}
+                onSeekVideo={handleSeekVideo}
+              />
+            )
           ) : (
-            <div className="glass-card" style={{ padding: '2rem', color: 'hsl(var(--text-muted))' }}>
+            <div style={{ color: 'hsl(var(--text-muted))', fontSize: '0.85rem', textAlign: 'center', marginTop: '4rem' }}>
               Learning content will appear once a video is assigned.
             </div>
           )}
         </div>
 
       </div>
-
-      {/* Floating widgets */}
-      <StudyBuddy topicSlug={currentSlug} />
-      <LearningStyleBadge />
     </div>
   );
 }
