@@ -1,0 +1,340 @@
+.container {
+    min-height: 100vh;
+    background-color: hsl(var(--bg-obsidian, 55 100% 96%));
+    color: hsl(var(--text-primary, 220 30% 20%));
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.container::before,
+.container::after {
+    content: '';
+    position: absolute;
+    filter: blur(140px);
+    opacity: 0.6;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.container::before {
+    top: -10%;
+    left: -10%;
+    width: 60vw;
+    height: 60vh;
+    background: radial-gradient(circle, hsla(320, 80%, 60%, 0.3) 0%, transparent 70%);
+}
+
+.header {
+    padding: 1.5rem 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid hsla(320, 50%, 85%, 0.5);
+    background: hsla(0, 0%, 100%, 0.4);
+    backdrop-filter: blur(12px);
+    z-index: 10;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logoIcon {
+    color: #ef4444;
+    /* YouTube Red */
+}
+
+.logo h1 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, hsl(195, 100%, 55%), hsl(320, 80%, 60%));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.backLink {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: hsl(220, 20%, 45%);
+    transition: color 0.2s;
+}
+
+.backLink:hover {
+    color: hsl(320, 80%, 60%);
+}
+
+.main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    padding: 2.5rem;
+    z-index: 10;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+@media (max-width: 968px) {
+    .main {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 500px;
+    }
+}
+
+.setupCard {
+    background: hsla(0, 0%, 100%, 0.55);
+    backdrop-filter: blur(24px);
+    border: 1px solid hsla(320, 50%, 95%, 0.9);
+    border-radius: 16px;
+    padding: 3rem 2rem;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(236, 72, 153, 0.08);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.setupCard h2 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.setupCard p {
+    color: hsl(220, 20%, 45%);
+    margin-bottom: 2rem;
+}
+
+.urlForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    max-width: 400px;
+}
+
+.input {
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    border: 1px solid hsla(320, 50%, 85%, 0.5);
+    background: hsla(0, 0%, 100%, 0.8);
+    outline: none;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.input:focus {
+    border-color: hsl(320, 80%, 60%);
+    box-shadow: 0 0 15px hsla(320, 80%, 60%, 0.2);
+}
+
+.button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ef4444, #b91c1c);
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+}
+
+.videoCard {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    background: black;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    height: auto;
+}
+
+.iframe {
+    width: 100%;
+    height: 100%;
+}
+
+.chatCard {
+    background: hsla(0, 0%, 100%, 0.6);
+    backdrop-filter: blur(24px);
+    border: 1px solid hsla(320, 50%, 95%, 0.9);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(56, 189, 248, 0.08);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-height: 80vh;
+    overflow: hidden;
+}
+
+.chatHeader {
+    padding: 1.25rem;
+    border-bottom: 1px solid hsla(320, 50%, 85%, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: hsla(0, 0%, 100%, 0.4);
+}
+
+.chatIcon {
+    color: hsl(195, 100%, 55%);
+}
+
+.chatMessages {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.emptyState {
+    text-align: center;
+    color: hsl(220, 15%, 65%);
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.messageWrapper {
+    display: flex;
+    gap: 0.75rem;
+    max-width: 85%;
+}
+
+.userWrapper {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.modelWrapper {
+    align-self: flex-start;
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.userWrapper .avatar {
+    background: hsl(195, 100%, 55%);
+    color: white;
+}
+
+.modelWrapper .avatar {
+    background: hsl(320, 80%, 60%);
+    color: white;
+}
+
+.message {
+    padding: 0.85rem 1.2rem;
+    border-radius: 14px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.userMessage {
+    background: hsl(195, 100%, 55%);
+    color: white;
+    border-top-right-radius: 4px;
+}
+
+.modelMessage {
+    background: white;
+    color: hsl(220, 30%, 20%);
+    border-top-left-radius: 4px;
+    border: 1px solid hsla(320, 50%, 85%, 0.5);
+}
+
+.loadingMessage {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: hsl(220, 20%, 45%);
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.chatInputContainer {
+    padding: 1.25rem;
+    border-top: 1px solid hsla(320, 50%, 85%, 0.5);
+    background: hsla(0, 0%, 100%, 0.4);
+    display: flex;
+    gap: 0.75rem;
+}
+
+.chatInput {
+    flex: 1;
+    padding: 0.85rem 1.25rem;
+    border-radius: 20px;
+    border: 1px solid hsla(320, 50%, 85%, 0.5);
+    background: white;
+    outline: none;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+}
+
+.chatInput:focus {
+    border-color: hsl(195, 100%, 55%);
+    box-shadow: 0 0 0 3px hsla(195, 100%, 55%, 0.1);
+}
+
+.chatInput:disabled {
+    background: hsla(0, 0%, 95%, 0.8);
+    cursor: not-allowed;
+}
+
+.sendButton {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, hsl(195, 100%, 55%), hsl(320, 80%, 60%));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sendButton:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px hsla(195, 100%, 55%, 0.3);
+}
+
+.sendButton:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}

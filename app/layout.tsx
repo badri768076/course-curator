@@ -20,7 +20,6 @@ export default function RootLayout({
       <body style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <QueryProvider>
           <AuthProvider>
-            <div className="aurora-bg"><div className="aurora-bg-blob"></div></div>
             {children}
           </AuthProvider>
         </QueryProvider>

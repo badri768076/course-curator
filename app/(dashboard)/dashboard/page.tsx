@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button';
 import { MindmapRenderer } from '@/components/features/topic/MindmapRenderer';
 import { VideoChatbot } from '@/components/features/video/VideoChatbot';
+import { FloatingChatbot } from '@/components/features/video/FloatingChatbot';
 import { ROUTES } from '@/constants/routes';
 import { useRouter } from 'next/navigation';
 import { Sparkles, Loader, BookOpen, CheckCircle2, Circle, AlertCircle, RefreshCw, BarChart2, MessageSquare } from 'lucide-react';
@@ -337,6 +338,14 @@ export default function DashboardPage() {
           </div>
             
         </div>
+      )}
+
+      {/* Floating Chatbot - Always visible */}
+      {activeCourse && activeCourse.chapters[0]?.topics[0]?.videoId && (
+        <FloatingChatbot
+          videoId={activeCourse.chapters[0].topics[0].videoId}
+          videoTitle={activeCourse.title}
+        />
       )}
     </div>
   );

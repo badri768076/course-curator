@@ -8,11 +8,11 @@ import { VideoPlayer } from '@/components/features/video/VideoPlayer';
 import { AdaptivePanel } from '@/components/features/video/AdaptivePanel';
 import { LearningStyleBadge } from '@/components/features/video/LearningStyleBadge';
 import { StudyBuddy } from '@/components/features/video/StudyBuddy';
-import { VideoChatbot } from '@/components/features/video/VideoChatbot';
+import { FloatingChatbot } from '@/components/features/video/FloatingChatbot';
 import { Button } from '@/components/ui/button';
 import { Card, CardTitle, CardDescription } from '@/components/ui/card';
 import { useVideoSync } from '@/hooks/use-video-sync';
-import { ArrowLeft, BookOpen, AlertCircle, MessageSquare } from 'lucide-react';
+import { ArrowLeft, BookOpen, AlertCircle } from 'lucide-react';
 import { ROUTES } from '@/constants/routes';
 
 export default function TopicPage({ params }: { params: { topicSlug: string } }) {
@@ -33,9 +33,6 @@ export default function TopicPage({ params }: { params: { topicSlug: string } })
 
   // Seek state — driven by transcript timestamp clicks in AdaptivePanel
   const [seekTo, setSeekTo] = useState<number | null>(null);
-  
-  // Chatbot state
-  const [showChatbot, setShowChatbot] = useState(false);
 
   /* ── Find topic (computed, no early return) ─────────────────── */
   let activeTopic: any = null;
@@ -214,68 +211,17 @@ export default function TopicPage({ params }: { params: { topicSlug: string } })
         </div>
 
         {/* RIGHT: Concepts & Learning Panel */}
-        <div style={{ borderLeft: '1px solid rgba(255,255,255,0.08)', padding: '1.5rem', overflowY: 'auto', background: 'rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column' }}>
-          {/* Toggle between Adaptive Panel and Chatbot */}
-          {activeTopic.videoId && (
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-              <button
-                onClick={() => setShowChatbot(false)}
-                style={{
-                  flex: 1,
-                  padding: '0.5rem',
-                  borderRadius: '6px',
-                  border: 'none',
-                  background: !showChatbot ? 'rgba(255,255,255,0.1)' : 'transparent',
-                  color: !showChatbot ? 'white' : 'hsl(var(--text-muted))',
-                  cursor: 'pointer',
-                  fontSize: '0.8rem',
-                  fontWeight: 500,
-                }}
-              >
-                Learning
-              </button>
-              <button
-                onClick={() => setShowChatbot(true)}
-                style={{
-                  flex: 1,
-                  padding: '0.5rem',
-                  borderRadius: '6px',
-                  border: 'none',
-                  background: showChatbot ? 'rgba(255,255,255,0.1)' : 'transparent',
-                  color: showChatbot ? 'white' : 'hsl(var(--text-muted))',
-                  cursor: 'pointer',
-                  fontSize: '0.8rem',
-                  fontWeight: 500,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.25rem',
-                }}
-              >
-                <MessageSquare size={14} />
-                AI Assistant
-              </button>
-            </div>
-          )}
-          
+        <div style={{ borderLeft: '1px solid rgba(255,255,255,0.08)', padding: '1.5rem', overflowY: 'auto', background: 'rgba(0,0,0,0.1)' }}>
           {activeTopic.videoId ? (
-            showChatbot ? (
-              <VideoChatbot
-                videoId={activeTopic.videoId}
-                videoTitle={activeTopic.title}
-                isOpen={showChatbot}
-              />
-            ) : (
-              <AdaptivePanel
-                courseId={courseId}
-                topicSlug={currentSlug}
-                topicTitle={activeTopic.title}
-                videoId={activeTopic.videoId}
-                isCompleted={isCompleted}
-                onToggleComplete={handleToggleComplete}
-                onSeekVideo={handleSeekVideo}
-              />
-            )
+            <AdaptivePanel
+              courseId={courseId}
+              topicSlug={currentSlug}
+              topicTitle={activeTopic.title}
+              videoId={activeTopic.videoId}
+              isCompleted={isCompleted}
+              onToggleComplete={handleToggleComplete}
+              onSeekVideo={handleSeekVideo}
+            />
           ) : (
             <div style={{ color: 'hsl(var(--text-muted))', fontSize: '0.85rem', textAlign: 'center', marginTop: '4rem' }}>
               Learning content will appear once a video is assigned.
@@ -284,6 +230,12 @@ export default function TopicPage({ params }: { params: { topicSlug: string } })
         </div>
 
       </div>
+
+      {/* Floating Chatbot */}
+      <FloatingChatbot
+        videoId={activeTopic.videoId || 'default'}
+        videoTitle={activeTopic.title}
+      />
     </div>
   );
 }
