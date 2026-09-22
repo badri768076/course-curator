@@ -65,11 +65,11 @@ ${truncatedTranscript}
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${apiKey}`
             },
-            body: JSON.stringify({
-                model: 'llama-3.1-8b-instant', // Very fast and supports 128k context length
-                messages: apiMessages,
-                temperature: 0.7,
-            }),
+         body: JSON.stringify({
+    model: 'openai/gpt-oss-20b',
+    messages: apiMessages,
+    temperature: 0.7,
+}),
         });
 
         if (!groqResponse.ok) {
