@@ -1,0 +1,472 @@
+.dashboardContainer {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: var(--cc-sidebar-width) minmax(0, 1fr);
+    background: var(--cc-bg);
+}
+
+/* ─────────────────────────────────────────
+   SIDEBAR
+───────────────────────────────────────── */
+
+.sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+
+    background: var(--cc-surface);
+    border-right: 1px solid var(--cc-border);
+
+    overflow: hidden;
+}
+
+.sidebarTop {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 1.5rem 1.1rem;
+}
+
+/* ─────────────────────────────────────────
+   BRAND
+───────────────────────────────────────── */
+
+.brand {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+
+    padding: 0.2rem 0.4rem;
+
+    border: none;
+    background: transparent;
+
+    color: var(--cc-ink);
+    text-align: left;
+}
+
+.brandMark {
+    width: 31px;
+    height: 31px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 8px;
+
+    background: var(--cc-ink);
+    color: white;
+
+    flex-shrink: 0;
+}
+
+.brandName {
+    font-family: var(--cc-font-display);
+    font-size: 1.12rem;
+    font-weight: 700;
+    letter-spacing: -0.035em;
+}
+
+.brandName span {
+    color: var(--cc-accent);
+}
+
+/* ─────────────────────────────────────────
+   NAVIGATION
+───────────────────────────────────────── */
+
+.navigation {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sectionLabel {
+    padding: 0 0.55rem;
+
+    font-size: 0.67rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+
+    color: var(--cc-ink-tertiary);
+}
+
+.navItem {
+    position: relative;
+
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+
+    padding: 0.68rem 0.75rem;
+
+    border: 1px solid transparent;
+    border-radius: var(--cc-radius-sm);
+
+    background: transparent;
+    color: var(--cc-ink-secondary);
+
+    font-size: 0.87rem;
+    font-weight: 500;
+
+    text-align: left;
+
+    transition:
+        background var(--cc-duration-fast) var(--cc-ease),
+        color var(--cc-duration-fast) var(--cc-ease),
+        border-color var(--cc-duration-fast) var(--cc-ease);
+}
+
+.navItem:hover {
+    background: var(--cc-surface-sunken);
+    color: var(--cc-ink);
+}
+
+.navItemActive {
+    background: var(--cc-accent-soft);
+    border-color: var(--cc-accent-muted);
+    color: var(--cc-accent);
+    font-weight: 600;
+}
+
+.navArrow {
+    margin-left: auto;
+}
+
+/* ─────────────────────────────────────────
+   COURSES
+───────────────────────────────────────── */
+
+.courseSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.courseCount {
+    min-width: 20px;
+    height: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: var(--cc-radius-full);
+
+    background: var(--cc-surface-sunken);
+    color: var(--cc-ink-tertiary);
+
+    font-size: 0.65rem;
+    font-weight: 700;
+}
+
+.courseList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    max-height: 210px;
+    overflow-y: auto;
+}
+
+.courseItem {
+    position: relative;
+
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+
+    padding: 0.62rem 0.7rem;
+
+    border: 1px solid transparent;
+    border-radius: var(--cc-radius-sm);
+
+    background: transparent;
+    color: var(--cc-ink-secondary);
+
+    font-size: 0.82rem;
+
+    text-align: left;
+
+    transition:
+        background var(--cc-duration-fast) var(--cc-ease),
+        color var(--cc-duration-fast) var(--cc-ease);
+}
+
+.courseItem:hover {
+    background: var(--cc-surface-sunken);
+    color: var(--cc-ink);
+}
+
+.courseItemActive {
+    background: var(--cc-surface-sunken);
+    border-color: var(--cc-border);
+    color: var(--cc-ink);
+    font-weight: 600;
+}
+
+.courseIcon {
+    flex-shrink: 0;
+    color: var(--cc-ink-tertiary);
+}
+
+.courseItemActive .courseIcon {
+    color: var(--cc-accent);
+}
+
+.courseTitle {
+    min-width: 0;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.activeDot {
+    width: 5px;
+    height: 5px;
+
+    margin-left: auto;
+
+    border-radius: 50%;
+    background: var(--cc-accent);
+
+    flex-shrink: 0;
+}
+
+.emptyCourses {
+    padding: 0.5rem;
+
+    color: var(--cc-ink-tertiary);
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+
+/* ─────────────────────────────────────────
+   PROGRESS
+───────────────────────────────────────── */
+
+.progressSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.progressCard {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+
+    padding: 0.75rem;
+
+    border: 1px solid var(--cc-border);
+    border-radius: var(--cc-radius-md);
+
+    background: var(--cc-surface-sunken);
+}
+
+.progressIcon {
+    width: 32px;
+    height: 32px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: var(--cc-radius-sm);
+
+    background: var(--cc-surface);
+    color: var(--cc-warning);
+
+    border: 1px solid var(--cc-border);
+}
+
+.progressValue {
+    font-family: var(--cc-font-display);
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.progressLabel {
+    margin-top: 0.15rem;
+
+    color: var(--cc-ink-tertiary);
+    font-size: 0.7rem;
+}
+
+/* ─────────────────────────────────────────
+   USER
+───────────────────────────────────────── */
+
+.sidebarBottom {
+    padding: 1rem;
+
+    border-top: 1px solid var(--cc-border);
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.userCard {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+
+    padding: 0.4rem;
+}
+
+.userAvatar {
+    width: 32px;
+    height: 32px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    background: var(--cc-surface-sunken);
+    border: 1px solid var(--cc-border);
+
+    color: var(--cc-ink-secondary);
+}
+
+.userInfo {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.userName {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--cc-ink);
+}
+
+.userEmail {
+    margin-top: 0.1rem;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    font-size: 0.68rem;
+    color: var(--cc-ink-tertiary);
+}
+
+.logoutButton {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+
+    padding: 0.55rem 0.7rem;
+
+    border: 1px solid transparent;
+    border-radius: var(--cc-radius-sm);
+
+    background: transparent;
+    color: var(--cc-ink-tertiary);
+
+    font-size: 0.78rem;
+    text-align: left;
+
+    transition:
+        color var(--cc-duration-fast) var(--cc-ease),
+        background var(--cc-duration-fast) var(--cc-ease);
+}
+
+.logoutButton:hover {
+    background: var(--cc-error-soft);
+    color: var(--cc-error);
+}
+
+/* ─────────────────────────────────────────
+   MAIN CONTENT
+───────────────────────────────────────── */
+
+.mainContent {
+    min-width: 0;
+    min-height: 100vh;
+    background: var(--cc-bg);
+}
+
+/* ─────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────── */
+
+@media (max-width: 900px) {
+    .dashboardContainer {
+        grid-template-columns: 210px minmax(0, 1fr);
+    }
+
+    .sidebarTop {
+        padding-left: 0.8rem;
+        padding-right: 0.8rem;
+    }
+
+    .brandName {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 700px) {
+    .dashboardContainer {
+        display: block;
+    }
+
+    .sidebar {
+        position: relative;
+        height: auto;
+
+        border-right: none;
+        border-bottom: 1px solid var(--cc-border);
+    }
+
+    .sidebarTop {
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    .courseSection,
+    .progressSection {
+        display: none;
+    }
+
+    .navigation {
+        margin-top: 0.25rem;
+    }
+
+    .sidebarBottom {
+        display: none;
+    }
+
+    .mainContent {
+        min-height: calc(100vh - 90px);
+    }
+}

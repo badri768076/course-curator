@@ -1,32 +1,44 @@
+/* =========================================================
+   COURSE CURATOR — AI TUTOR
+   Editorial Study Lab Theme
+   ========================================================= */
+
 .chatContainer {
     display: flex;
     flex-direction: column;
+
+    width: 100%;
     height: 100%;
     min-height: 0;
 
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
+    background: #fffdf8;
+
+    border: 1px solid #e5e1d8;
     border-radius: 14px;
 
     overflow: hidden;
 
-    font-family: var(--font-body), sans-serif;
+    color: #17191d;
+
+    font-family: var(--font-body), "DM Sans", sans-serif;
 }
 
 
-/* ─────────────────────────────────────────
+/* =========================================================
    HEADER
-───────────────────────────────────────── */
+   ========================================================= */
 
 .chatHeader {
     display: flex;
     align-items: center;
+
     gap: 0.65rem;
 
-    padding: 0.9rem 1.1rem;
+    padding: 0.85rem 1rem;
 
-    background: #ffffff;
-    border-bottom: 1px solid #eeeeee;
+    background: #fffdf8;
+
+    border-bottom: 1px solid #e8e4dc;
 }
 
 .headerIconWrapper {
@@ -37,11 +49,14 @@
     align-items: center;
     justify-content: center;
 
-    background: #f4f7fb;
-    color: #2563eb;
+    flex-shrink: 0;
 
-    border: 1px solid #e7edf5;
+    background: #eef2fc;
+
+    border: 1px solid #dce4f8;
     border-radius: 8px;
+
+    color: #3157d5;
 }
 
 .headerIcon {
@@ -52,35 +67,38 @@
 .headerTitle {
     margin: 0;
 
-    font-family: var(--font-title);
-    font-size: 0.9rem;
+    color: #17191d;
+
+    font-family: var(--font-title), "DM Sans", sans-serif;
+
+    font-size: 0.88rem;
     font-weight: 650;
 
-    color: #111827;
     letter-spacing: -0.01em;
 }
 
 
-/* ─────────────────────────────────────────
-   CHAT AREA
-───────────────────────────────────────── */
+/* =========================================================
+   MESSAGE AREA
+   ========================================================= */
 
 .chatMessages {
     flex: 1;
     min-height: 0;
 
-    overflow-y: auto;
-
-    padding: 1.15rem;
-
     display: flex;
     flex-direction: column;
-    gap: 1.1rem;
 
-    background: #fafafa;
+    gap: 1rem;
+
+    padding: 1rem;
+
+    overflow-y: auto;
+
+    background: #f8f7f3;
 
     scrollbar-width: thin;
-    scrollbar-color: #d1d5db transparent;
+    scrollbar-color: #d2cec5 transparent;
 }
 
 .chatMessages::-webkit-scrollbar {
@@ -92,14 +110,14 @@
 }
 
 .chatMessages::-webkit-scrollbar-thumb {
-    background: #d1d5db;
-    border-radius: 10px;
+    background: #d2cec5;
+    border-radius: 999px;
 }
 
 
-/* ─────────────────────────────────────────
-   MESSAGE WRAPPERS
-───────────────────────────────────────── */
+/* =========================================================
+   MESSAGE WRAPPER
+   ========================================================= */
 
 .messageWrapper {
     display: flex;
@@ -107,9 +125,20 @@
 
     gap: 0.55rem;
 
+    width: fit-content;
     max-width: 88%;
 
     animation: messageAppear 0.18s ease-out;
+}
+
+.modelWrapper {
+    align-self: flex-start;
+}
+
+.userWrapper {
+    align-self: flex-end;
+
+    flex-direction: row-reverse;
 }
 
 @keyframes messageAppear {
@@ -124,77 +153,83 @@
     }
 }
 
-.modelWrapper {
-    align-self: flex-start;
-}
 
-.userWrapper {
-    align-self: flex-end;
-    flex-direction: row-reverse;
-}
-
-
-/* ─────────────────────────────────────────
+/* =========================================================
    TUTOR AVATAR
-───────────────────────────────────────── */
+   ========================================================= */
 
 .avatarModel {
-    width: 25px;
-    height: 25px;
-
-    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
+    flex-shrink: 0;
+
     margin-top: 2px;
 
-    background: #eef4ff;
-    color: #2563eb;
+    background: #eef2fc;
 
-    border: 1px solid #dce8ff;
+    border: 1px solid #dce4f8;
     border-radius: 7px;
+
+    color: #3157d5;
 }
 
 
-/* ─────────────────────────────────────────
-   MESSAGE
-───────────────────────────────────────── */
+/* =========================================================
+   MESSAGE BUBBLES
+   ========================================================= */
 
 .message {
     padding: 0.65rem 0.8rem;
 
     border-radius: 10px;
 
-    font-size: 0.84rem;
+    font-size: 0.82rem;
     line-height: 1.55;
 
     word-break: break-word;
 }
 
+
+/* Tutor */
+
 .modelMessage {
-    background: #ffffff;
+    background: #fffdf8;
 
-    color: #374151;
-
-    border: 1px solid #e8e8e8;
+    border: 1px solid #e4e1da;
 
     border-top-left-radius: 4px;
+
+    color: #3f4248;
+
+    box-shadow:
+        0 1px 2px rgba(20, 22, 25, 0.025);
 }
 
+
+/* User */
+
 .userMessage {
-    background: #2563eb;
+    background: #3157d5;
+
+    border: 1px solid #3157d5;
+
+    border-top-right-radius: 4px;
 
     color: #ffffff;
 
-    border-top-right-radius: 4px;
+    box-shadow:
+        0 1px 2px rgba(49, 87, 213, 0.12);
 }
 
 
-/* ─────────────────────────────────────────
-   MARKDOWN INSIDE TUTOR MESSAGES
-───────────────────────────────────────── */
+/* =========================================================
+   MARKDOWN CONTENT
+   ========================================================= */
 
 .modelMessage p {
     margin: 0 0 0.55rem;
@@ -205,13 +240,19 @@
 }
 
 .modelMessage strong {
-    color: #111827;
-    font-weight: 650;
+    color: #17191d;
+
+    font-weight: 700;
+}
+
+.modelMessage em {
+    color: #555960;
 }
 
 .modelMessage ul,
 .modelMessage ol {
-    margin: 0.45rem 0;
+    margin: 0.5rem 0;
+
     padding-left: 1.15rem;
 }
 
@@ -219,27 +260,129 @@
     margin-bottom: 0.25rem;
 }
 
-.modelMessage code {
-    padding: 0.1rem 0.3rem;
+.modelMessage li:last-child {
+    margin-bottom: 0;
+}
 
-    background: #f3f4f6;
+.modelMessage h1,
+.modelMessage h2,
+.modelMessage h3,
+.modelMessage h4 {
+    margin: 0.7rem 0 0.35rem;
 
-    border-radius: 4px;
+    color: #17191d;
 
-    font-size: 0.78rem;
+    font-weight: 700;
+
+    line-height: 1.3;
+}
+
+.modelMessage h1 {
+    font-size: 1rem;
+}
+
+.modelMessage h2 {
+    font-size: 0.92rem;
+}
+
+.modelMessage h3 {
+    font-size: 0.86rem;
+}
+
+.modelMessage h4 {
+    font-size: 0.82rem;
 }
 
 
-/* ─────────────────────────────────────────
-   LOADING
-───────────────────────────────────────── */
+/* Inline code */
+
+.modelMessage code {
+    padding: 0.12rem 0.32rem;
+
+    background: #f0eee8;
+
+    border: 1px solid #e4e0d7;
+
+    border-radius: 4px;
+
+    color: #30343a;
+
+    font-family: monospace;
+
+    font-size: 0.76rem;
+}
+
+
+/* Code blocks */
+
+.modelMessage pre {
+    margin: 0.65rem 0;
+
+    padding: 0.75rem;
+
+    overflow-x: auto;
+
+    background: #202329;
+
+    border-radius: 7px;
+
+    color: #f4f4f4;
+
+    font-size: 0.72rem;
+
+    line-height: 1.5;
+}
+
+.modelMessage pre code {
+    padding: 0;
+
+    background: transparent;
+
+    border: none;
+
+    color: inherit;
+
+    font-size: inherit;
+}
+
+
+/* Links */
+
+.modelMessage a {
+    color: #3157d5;
+
+    text-decoration: underline;
+
+    text-underline-offset: 2px;
+}
+
+
+/* Blockquotes */
+
+.modelMessage blockquote {
+    margin: 0.6rem 0;
+
+    padding: 0.45rem 0.7rem;
+
+    border-left: 3px solid #3157d5;
+
+    background: #f3f5fb;
+
+    color: #555960;
+}
+
+
+/* =========================================================
+   LOADING STATE
+   ========================================================= */
 
 .loadingMessage {
     display: flex;
     align-items: center;
+
     gap: 0.45rem;
 
-    color: #6b7280;
+    color: #777b82;
 }
 
 .spinner {
@@ -253,142 +396,161 @@
 }
 
 
-/* ─────────────────────────────────────────
+/* =========================================================
    QUICK QUESTIONS
-───────────────────────────────────────── */
+   ========================================================= */
 
 .quickQuestions {
     display: flex;
     flex-wrap: wrap;
 
+    align-self: flex-start;
+
     gap: 0.4rem;
 
     margin-top: -0.15rem;
-    margin-left: 2rem;
-
-    align-self: flex-start;
+    margin-left: 2.05rem;
 }
 
 .quickQButton {
-    padding: 0.42rem 0.7rem;
+    padding: 0.42rem 0.68rem;
 
-    background: #ffffff;
+    background: #fffdf8;
 
-    color: #4b5563;
-
-    border: 1px solid #e1e5ea;
+    border: 1px solid #dedad1;
     border-radius: 7px;
 
-    font-size: 0.72rem;
+    color: #555960;
+
+    font-family: inherit;
+
+    font-size: 0.69rem;
+    font-weight: 550;
+
     line-height: 1.2;
 
     cursor: pointer;
 
     transition:
-        background 0.15s ease,
-        border-color 0.15s ease,
-        color 0.15s ease,
-        transform 0.15s ease;
+        background 0.16s ease,
+        border-color 0.16s ease,
+        color 0.16s ease,
+        transform 0.16s ease;
 }
 
 .quickQButton:hover {
-    background: #f5f8fc;
-    border-color: #cbd5e1;
-    color: #1f2937;
+    background: #eef2fc;
+
+    border-color: #cbd6f3;
+
+    color: #3157d5;
 
     transform: translateY(-1px);
 }
 
+.quickQButton:active {
+    transform: translateY(0);
+}
 
-/* ─────────────────────────────────────────
+
+/* =========================================================
    INPUT AREA
-───────────────────────────────────────── */
+   ========================================================= */
 
 .chatInputContainer {
     display: flex;
     align-items: center;
+
     gap: 0.55rem;
 
-    padding: 0.8rem 1rem;
+    padding: 0.75rem 0.9rem;
 
-    background: #ffffff;
+    background: #fffdf8;
 
-    border-top: 1px solid #eeeeee;
+    border-top: 1px solid #e8e4dc;
 }
+
+
+/* Input */
 
 .chatInput {
     flex: 1;
 
     min-width: 0;
 
-    padding: 0.68rem 0.9rem;
+    padding: 0.67rem 0.85rem;
 
-    background: #f8f9fb;
+    background: #f7f5f0;
 
-    color: #111827;
-
-    border: 1px solid #e1e5ea;
-    border-radius: 9px;
+    border: 1px solid #dedad1;
+    border-radius: 8px;
 
     outline: none;
 
+    color: #17191d;
+
     font-family: inherit;
-    font-size: 0.82rem;
+
+    font-size: 0.8rem;
 
     transition:
-        border-color 0.15s ease,
-        background 0.15s ease,
-        box-shadow 0.15s ease;
+        background 0.16s ease,
+        border-color 0.16s ease,
+        box-shadow 0.16s ease;
 }
 
 .chatInput::placeholder {
-    color: #9ca3af;
+    color: #999b9f;
 }
 
 .chatInput:focus {
     background: #ffffff;
 
-    border-color: #93b4f5;
+    border-color: #9eadd9;
 
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+    box-shadow:
+        0 0 0 3px rgba(49, 87, 213, 0.07);
 }
 
 .chatInput:disabled {
     opacity: 0.55;
+
     cursor: not-allowed;
 }
 
 
-/* ─────────────────────────────────────────
+/* =========================================================
    SEND BUTTON
-───────────────────────────────────────── */
+   ========================================================= */
 
 .sendButton {
     width: 34px;
     height: 34px;
 
-    flex-shrink: 0;
-
     display: flex;
     align-items: center;
     justify-content: center;
 
-    background: #2563eb;
-    color: #ffffff;
+    flex-shrink: 0;
+
+    background: #3157d5;
 
     border: none;
     border-radius: 8px;
 
+    color: #ffffff;
+
     cursor: pointer;
 
     transition:
-        background 0.15s ease,
-        transform 0.15s ease,
-        opacity 0.15s ease;
+        background 0.16s ease,
+        transform 0.16s ease,
+        opacity 0.16s ease;
 }
 
 .sendButton:hover:not(:disabled) {
-    background: #1d4ed8;
+    background: #2444ae;
+
     transform: translateY(-1px);
 }
 
@@ -397,31 +559,78 @@
 }
 
 .sendButton:disabled {
-    background: #dbe3f0;
-    color: #94a3b8;
+    background: #dce2ef;
+
+    color: #98a2b7;
 
     cursor: not-allowed;
+
+    transform: none;
 }
 
 
-/* ─────────────────────────────────────────
+/* =========================================================
+   FOCUS / ACCESSIBILITY
+   ========================================================= */
+
+.quickQButton:focus-visible,
+.sendButton:focus-visible,
+.chatInput:focus-visible {
+    outline: 2px solid #3157d5;
+
+    outline-offset: 2px;
+}
+
+
+/* =========================================================
    RESPONSIVE
-───────────────────────────────────────── */
+   ========================================================= */
 
 @media (max-width: 640px) {
+    .chatHeader {
+        padding: 0.75rem 0.85rem;
+    }
+
     .chatMessages {
-        padding: 0.9rem;
+        padding: 0.85rem;
     }
 
     .messageWrapper {
         max-width: 94%;
     }
 
+    .quickQuestions {
+        margin-left: 0;
+    }
+
+    .quickQButton {
+        font-size: 0.67rem;
+    }
+
     .chatInputContainer {
         padding: 0.7rem;
     }
+}
+
+@media (max-width: 420px) {
+    .messageWrapper {
+        max-width: 96%;
+    }
+
+    .avatarModel {
+        width: 23px;
+        height: 23px;
+    }
+
+    .message {
+        font-size: 0.78rem;
+    }
 
     .quickQuestions {
-        margin-left: 0;
+        gap: 0.3rem;
+    }
+
+    .quickQButton {
+        padding: 0.38rem 0.55rem;
     }
 }
