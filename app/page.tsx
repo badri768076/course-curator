@@ -361,6 +361,7 @@ export default function HomePage() {
           A focused workspace for learning better.
         </span>
 
+
         <span className={styles.footerYear}>
           2026
         </span>
