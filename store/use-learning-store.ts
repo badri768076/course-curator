@@ -32,6 +32,7 @@ interface LearningStore {
   addCourse: (course: Course) => void;
   setActiveCourse: (courseId: string) => void;
   setActiveTopic: (topicSlug: string | null) => void;
+  updateTopicVideoId: (courseId: string, topicSlug: string, videoId: string) => void;
   removeCourse: (courseId: string) => void;
   removeAllCourses: () => void;
   
@@ -133,6 +134,22 @@ export const useLearningStore = create<LearningStore>()(
         }),
 
       setActiveTopic: (topicSlug) => set({ activeTopicSlug: topicSlug }),
+
+      updateTopicVideoId: (courseId, topicSlug, videoId) =>
+        set((state) => ({
+          courses: state.courses.map((course) => {
+            if (course.id !== courseId) return course;
+            return {
+              ...course,
+              chapters: course.chapters.map((chapter) => ({
+                ...chapter,
+                topics: chapter.topics.map((topic) =>
+                  topic.slug === topicSlug ? { ...topic, videoId } : topic
+                ),
+              })),
+            };
+          }),
+        })),
 
       // ── Course Removal ──
       removeCourse: (courseId) =>

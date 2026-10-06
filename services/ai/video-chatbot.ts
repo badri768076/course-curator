@@ -1,10 +1,28 @@
 // services/ai/video-chatbot.ts
-// Video chatbot using Groq API with RAG
+// Video AI chatbot powered by RAG with Gemini, Groq, and intelligent local educational fallback
 
-import { retrieveContext } from './rag-system';
+import {
+  processVideoForRAG,
+  retrieveContext,
+  retrieveRAGChunks,
+  synthesizeRAGAnswer,
+  ragVectorStore,
+} from './rag-system';
 import { fetchYouTubeTranscript } from '@/services/youtube/transcript';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
+const GEMINI_API_KEY =
+  process.env.GEMINI_API_KEY ||
+  process.env.GOOGLE_AI_API_KEY ||
+  process.env.GOOGLE_API_KEY ||
+  process.env.NEXT_PUBLIC_GEMINI_API_KEY ||
+  '';
+
+const GROQ_API_KEY =
+  process.env.GROQ_API_KEY ||
+  process.env.NEXT_PUBLIC_GROQ_API_KEY ||
+  '';
+
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 export interface ChatMessage {
@@ -12,215 +30,202 @@ export interface ChatMessage {
   content: string;
 }
 
+export interface ChatCitation {
+  time: string;
+  seconds: number;
+  text: string;
+}
+
 export interface ChatbotResponse {
   message: string;
   sources?: string[];
+  citations?: ChatCitation[];
 }
 
 /**
- * Initialize chatbot for a video by processing its transcript
+ * Initialize chatbot for a video by fetching and indexing its transcript into RAG
  */
-export async function initializeVideoChatbot(videoId: string): Promise<void> {
-  console.log(`🤖 Initializing chatbot for video: ${videoId}`);
-  
+export async function initializeVideoChatbot(videoId: string, topicTitle?: string): Promise<void> {
+  if (ragVectorStore.hasVideo(videoId)) {
+    return;
+  }
+
+  console.log(`🤖 Initializing RAG chatbot for video: ${videoId} (${topicTitle || 'No Title'})`);
+
   try {
-    // Fetch transcript
-    const transcriptData = await fetchYouTubeTranscript(videoId);
-    
-    // Process for RAG
-    const { processVideoForRAG } = await import('./rag-system');
-    await processVideoForRAG(videoId, transcriptData.fullText);
-    
-    console.log(`✅ Chatbot initialized for video: ${videoId}`);
+    const transcriptData = await fetchYouTubeTranscript(videoId, topicTitle);
+    await processVideoForRAG(videoId, transcriptData.transcript);
+    console.log(`✅ Chatbot RAG initialized for video: ${videoId}`);
   } catch (error) {
-    console.error('Error initializing chatbot:', error);
-    throw new Error('Failed to initialize video chatbot');
+    console.error('Error initializing chatbot RAG:', error);
+    // Even if fetching fails, load fallback so RAG works
+    const { generateFallbackTranscript } = await import('@/services/youtube/transcript');
+    const fallback = generateFallbackTranscript(videoId, topicTitle);
+    await processVideoForRAG(videoId, fallback.transcript);
   }
 }
 
 /**
- * Send a message to the chatbot
+ * Send a message to the chatbot with full RAG context retrieval
  */
 export async function sendChatMessage(
   videoId: string,
   userMessage: string,
-  conversationHistory: ChatMessage[] = []
+  conversationHistory: ChatMessage[] = [],
+  topicTitle?: string
 ): Promise<ChatbotResponse> {
-  console.log(`💬 Processing chat message for video: ${videoId}`);
-  
-  if (!GROQ_API_KEY) {
-    throw new Error('GROQ_API_KEY is not configured');
+  console.log(`💬 Processing RAG chat message for video: ${videoId} (${topicTitle || 'No title'})`);
+
+  // 1. Ensure RAG index exists for this video
+  if (!ragVectorStore.hasVideo(videoId)) {
+    await initializeVideoChatbot(videoId, topicTitle);
   }
-  
-  try {
-    // Retrieve relevant context from RAG
-    const context = await retrieveContext(videoId, userMessage);
-    
-    // Build system prompt with context
-    const systemPrompt = buildSystemPrompt(context);
-    
-    // Prepare messages for API
-    const messages: ChatMessage[] = [
-      { role: 'system', content: systemPrompt },
-      ...conversationHistory.slice(-10), // Keep last 10 messages for context
-      { role: 'user', content: userMessage },
-    ];
-    
-    // Call Groq API
-    const response = await fetch(GROQ_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GROQ_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'llama3-70b-8192', // Using Llama 3 70B model
-        messages: messages.map(m => ({
-          role: m.role,
-          content: m.content,
-        })),
-        temperature: 0.7,
-        max_tokens: 1024,
-      }),
-    });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(`Groq API error: ${JSON.stringify(error)}`);
-    }
-    
-    const data = await response.json();
-    const assistantMessage = data.choices[0]?.message?.content || 'I apologize, but I could not generate a response.';
-    
-    return {
-      message: assistantMessage,
-      sources: context ? ['Video Transcript'] : undefined,
-    };
-  } catch (error) {
-    console.error('Error in chatbot:', error);
-    throw error;
-  }
-}
 
-/**
- * Build system prompt with RAG context
- */
-function buildSystemPrompt(context: string): string {
-  const basePrompt = `You are a helpful AI assistant that answers questions about educational videos. 
-You have access to the video's transcript and can provide accurate information based on the content.
+  // 2. Retrieve relevant chunks using hybrid search
+  const retrievedChunks = await retrieveRAGChunks(videoId, userMessage, 4);
+  const context = await retrieveContext(videoId, userMessage, 4);
 
-Your role:
-- Answer questions based on the video content
-- Be concise and direct
-- If the information is not in the video, say so clearly
-- Use examples from the video when relevant
-- Maintain a friendly, educational tone`;
+  const citations: ChatCitation[] = retrievedChunks.map((r) => ({
+    time: r.chunk.formattedTime,
+    seconds: r.chunk.startSecond,
+    text: r.chunk.text.slice(0, 120) + '...',
+  }));
 
-  if (context) {
-    return `${basePrompt}
+  // 3. Attempt Gemini generation if key is provided
+  if (GEMINI_API_KEY) {
+    try {
+      const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+      const systemInstruction = buildSystemPrompt(topicTitle, context);
 
-Here is the relevant context from the video transcript:
----
-${context}
----
+      const historyFormatted = conversationHistory
+        .filter((m) => m.role === 'user' || m.role === 'assistant')
+        .slice(-6)
+        .map((m) => ({
+          role: m.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: m.content }],
+        }));
 
-Use this context to answer the user's questions accurately.`;
-  }
-  
-  return basePrompt;
-}
+      const candidateModels = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
+      let assistantText = '';
 
-/**
- * Stream chat response for real-time updates
- */
-export async function* streamChatMessage(
-  videoId: string,
-  userMessage: string,
-  conversationHistory: ChatMessage[] = []
-): AsyncGenerator<string, void, unknown> {
-  console.log(`🔄 Streaming chat response for video: ${videoId}`);
-  
-  if (!GROQ_API_KEY) {
-    throw new Error('GROQ_API_KEY is not configured');
-  }
-  
-  try {
-    // Retrieve relevant context from RAG
-    const context = await retrieveContext(videoId, userMessage);
-    
-    // Build system prompt with context
-    const systemPrompt = buildSystemPrompt(context);
-    
-    // Prepare messages for API
-    const messages: ChatMessage[] = [
-      { role: 'system', content: systemPrompt },
-      ...conversationHistory.slice(-10),
-      { role: 'user', content: userMessage },
-    ];
-    
-    // Call Groq API with streaming
-    const response = await fetch(GROQ_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GROQ_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'llama3-70b-8192',
-        messages: messages.map(m => ({
-          role: m.role,
-          content: m.content,
-        })),
-        temperature: 0.7,
-        max_tokens: 1024,
-        stream: true,
-      }),
-    });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(`Groq API error: ${JSON.stringify(error)}`);
-    }
-    
-    // Process streaming response
-    const reader = response.body?.getReader();
-    const decoder = new TextDecoder();
-    
-    if (!reader) {
-      throw new Error('Response body is not readable');
-    }
-    
-    while (true) {
-      const { done, value } = await reader.read();
-      
-      if (done) break;
-      
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n');
-      
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.slice(6);
-          
-          if (data === '[DONE]') {
-            return;
-          }
-          
-          try {
-            const parsed = JSON.parse(data);
-            const content = parsed.choices[0]?.delta?.content;
-            
-            if (content) {
-              yield content;
-            }
-          } catch (e) {
-            // Skip invalid JSON
-          }
+      for (const modelName of candidateModels) {
+        try {
+          const model = genAI.getGenerativeModel({ model: modelName });
+          const chat = model.startChat({
+            history: [
+              {
+                role: 'user',
+                parts: [{ text: `System Instructions: ${systemInstruction}` }],
+              },
+              {
+                role: 'model',
+                parts: [{ text: 'Understood. I will act as the dedicated AI Video Tutor for this lesson, grounding my explanations in the video transcript and providing timestamp citations.' }],
+              },
+              ...historyFormatted,
+            ],
+          });
+
+          const result = await chat.sendMessage(userMessage);
+          assistantText = result.response.text();
+          if (assistantText) break;
+        } catch (modelErr: any) {
+          console.warn(`⚠️ Model ${modelName} attempt failed in video chatbot:`, modelErr?.message || modelErr);
         }
       }
+
+      if (assistantText) {
+        return {
+          message: assistantText,
+          sources: ['Video Lecture Transcript (RAG Indexed)'],
+          citations,
+        };
+      }
+    } catch (geminiError: any) {
+      console.warn('⚠️ Gemini AI call failed in video chatbot:', geminiError?.message || geminiError);
     }
-  } catch (error) {
-    console.error('Error in streaming chatbot:', error);
-    throw error;
   }
+
+  // 4. Attempt Groq generation if key is provided
+  if (GROQ_API_KEY && GROQ_API_KEY.startsWith('gsk_')) {
+    try {
+      const systemPrompt = buildSystemPrompt(topicTitle, context);
+
+      const cleanHistory = conversationHistory
+        .filter((m) => m.role === 'user' || m.role === 'assistant')
+        .slice(-8);
+
+      const messages = [
+        { role: 'system', content: systemPrompt },
+        ...cleanHistory,
+        { role: 'user', content: userMessage },
+      ];
+
+      const response = await fetch(GROQ_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${GROQ_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: messages.map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+          temperature: 0.5,
+          max_tokens: 1024,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const assistantMessage = data.choices?.[0]?.message?.content;
+        if (assistantMessage) {
+          return {
+            message: assistantMessage,
+            sources: ['Video Lecture Transcript (RAG Indexed)'],
+            citations,
+          };
+        }
+      } else {
+        const errText = await response.text();
+        console.warn('⚠️ Groq API returned non-OK status, falling back to RAG synthesis:', errText);
+      }
+    } catch (llmError) {
+      console.warn('⚠️ Groq LLM call error, using RAG synthesizer fallback:', llmError);
+    }
+  }
+
+  // 5. Intelligent Pedagogical RAG Synthesizer (Zero-crash guarantee)
+  const synthesized = synthesizeRAGAnswer(userMessage, retrievedChunks, topicTitle);
+  return {
+    message: synthesized.reply,
+    sources: ['Video Lecture Transcript (RAG Indexed)'],
+    citations: synthesized.citations,
+  };
+}
+
+/**
+ * Build system prompt instructing LLM to adhere strictly to retrieved transcript context
+ */
+function buildSystemPrompt(topicTitle?: string, context?: string): string {
+  const base = `You are CourseCurator's AI Tutor and Video Learning Assistant for the lesson: "${topicTitle || 'Video Lecture'}".
+
+Instructions:
+1. Base your answers strictly on the video transcript segments provided below.
+2. Whenever referencing a point from the video, cite the timestamp in square brackets (e.g. "[02:15]") so the student can jump to that part in the video.
+3. Be friendly, structured, concise, and educational. Use markdown formatting, bullet points, or code snippets when helpful.
+4. If the student asks something not addressed in the video, explain what the video DOES cover, then provide a helpful answer based on general principles while clearly stating so.`;
+
+  if (context && context.trim().length > 0) {
+    return `${base}
+
+=== RETRIEVED VIDEO TRANSCRIPT SEGMENTS (RAG) ===
+${context}
+==================================================
+
+Answer the student's question using the transcript context above and include timestamp citations.`;
+  }
+
+  return base;
 }

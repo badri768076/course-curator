@@ -55,3 +55,43 @@ export const DEFAULT_LEARNING_PROFILE: LearningProfile = {
   },
   lastUpdated: new Date().toISOString(),
 };
+
+export interface StyleMeta {
+  label: string;
+  emoji: string;
+  color: string;
+  description: string;
+}
+
+export const STYLE_META: Record<LearningStyle, StyleMeta> = {
+  visual: {
+    label: 'Visual Learner',
+    emoji: '🎨',
+    color: '#a855f7',
+    description: 'You learn best through diagrams, mindmaps, and visual representations of concepts.',
+  },
+  auditory: {
+    label: 'Auditory Learner',
+    emoji: '🎧',
+    color: '#00ccff',
+    description: 'You absorb information most effectively by listening, replaying, and following transcripts.',
+  },
+  'read-write': {
+    label: 'Read/Write Learner',
+    emoji: '📝',
+    color: '#f59e0b',
+    description: 'You prefer structured text, summaries, bullet points, and written notes.',
+  },
+  kinesthetic: {
+    label: 'Active Learner',
+    emoji: '⚡',
+    color: '#22c55e',
+    description: 'You learn by doing — quizzes, challenges, and hands-on practice work best for you.',
+  },
+  unknown: {
+    label: 'Discovering Style...',
+    emoji: '🔍',
+    color: '#64748b',
+    description: "Keep engaging with the content. We're learning how you learn.",
+  },
+};

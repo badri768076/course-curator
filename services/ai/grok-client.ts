@@ -221,28 +221,36 @@ async function enrichCourseWithVideos(course: Course): Promise<void> {
   console.log(`✅ Found ${foundCount}/${totalTopics} real videos (${successRate}%)`);
 }
 
-// ── Generate fallback video ID ──
+// ── Real Educational Videos Fallback ──
+const FALLBACK_TOPIC_VIDEOS: Record<string, string> = {
+  python: 'kqtD5dpn9C8',
+  javascript: 'W6NZfCO5SIk',
+  react: 'bMknfKXIFA8',
+  html: 'kUMe1FH4CHE',
+  css: '1PnVor36_40',
+  next: 'ZVnjOPwW_EC',
+  node: 'f2EqECiTBL8',
+  typescript: 'BwuLxPH8IDs',
+  machine: 'ukzFI9rgwfU',
+  ai: 'JMUxmLrFLDY',
+  data: '8hly31xKli0',
+  sql: 'HXV3zeRR3h4',
+  git: 'RGOj5yH7evk',
+  quantum: 'JhHMJCUmq28',
+  security: 'inWWhr5tnEA',
+  general: 'rfscVS0vtbw',
+};
+
 function generateFallbackVideoId(topic: string): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
-  let id = '';
-  let seed = 0;
-  
-  for (let i = 0; i < topic.length; i++) {
-    seed = (seed * 31 + topic.charCodeAt(i)) % 100000;
+  const lower = topic.toLowerCase();
+  for (const [key, id] of Object.entries(FALLBACK_TOPIC_VIDEOS)) {
+    if (lower.includes(key)) {
+      return id;
+    }
   }
-  seed = Math.abs(seed);
-  
-  for (let i = 0; i < 11; i++) {
-    seed = (seed * 9301 + 49297) % 233280;
-    const index = Math.floor((seed / 233280) * chars.length);
-    id += chars[index];
-  }
-  
-  const prefixes = ['dQw4w', 'W6NZf', 'rfscV', 'Tj6Hh', 'GwIo3', 'uaCiD', 'JMUxm', 'gp5H0'];
-  const prefix = prefixes[Math.abs(seed) % prefixes.length];
-  
-  return (prefix + id).slice(0, 11);
+  return FALLBACK_TOPIC_VIDEOS.general;
 }
+
 
 // ============================================
 // TRANSFORM AI RESPONSE TO COURSE

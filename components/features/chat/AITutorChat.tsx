@@ -49,7 +49,7 @@ export function AITutorChat({ videoId, topicTitle }: AITutorChatProps) {
             const response = await fetch('/api/youtube-chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ videoId, messages: updatedMessages }),
+                body: JSON.stringify({ videoId, topicTitle, messages: updatedMessages, message: text }),
             });
 
             const data = await response.json();

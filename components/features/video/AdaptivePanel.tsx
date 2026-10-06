@@ -11,7 +11,6 @@ import { AIFeedback } from '@/components/features/mcq/AIFeedback';
 import { STYLE_META, LearningStyle } from '@/types/learning-style';
 import {
   FileText,
-  AlignLeft,
   Share2,
   GitBranch,
   Zap,
@@ -21,11 +20,12 @@ import {
   RefreshCw,
   Clock,
   Download,
+  Sparkles,
 } from 'lucide-react';
 
 import styles from './AdaptivePanel.module.css';
 
-type TabId = 'summary' | 'mindmap' | 'flowchart' | 'quiz' | 'transcript';
+type TabId = 'summary' | 'mindmap' | 'flowchart' | 'quiz';
 
 const BASE_TABS: Array<{
   id: TabId;
@@ -33,18 +33,17 @@ const BASE_TABS: Array<{
   icon: React.ReactNode;
 }> = [
     { id: 'summary', label: 'Summary', icon: <FileText size={14} /> },
-    { id: 'transcript', label: 'Transcript', icon: <AlignLeft size={14} /> },
     { id: 'mindmap', label: 'Mindmap', icon: <Share2 size={14} /> },
     { id: 'flowchart', label: 'Flowchart', icon: <GitBranch size={14} /> },
     { id: 'quiz', label: 'Quiz', icon: <Zap size={14} /> },
   ];
 
 const STYLE_TAB_ORDER: Record<LearningStyle, TabId[]> = {
-  visual: ['mindmap', 'flowchart', 'summary', 'transcript', 'quiz'],
-  auditory: ['transcript', 'summary', 'mindmap', 'flowchart', 'quiz'],
-  'read-write': ['summary', 'transcript', 'flowchart', 'mindmap', 'quiz'],
-  kinesthetic: ['quiz', 'summary', 'flowchart', 'mindmap', 'transcript'],
-  unknown: ['summary', 'transcript', 'mindmap', 'flowchart', 'quiz'],
+  visual: ['mindmap', 'flowchart', 'summary', 'quiz'],
+  auditory: ['summary', 'mindmap', 'flowchart', 'quiz'],
+  'read-write': ['summary', 'flowchart', 'mindmap', 'quiz'],
+  kinesthetic: ['quiz', 'summary', 'flowchart', 'mindmap'],
+  unknown: ['summary', 'mindmap', 'flowchart', 'quiz'],
 };
 
 /* -------------------------------------------------------------------------- */
@@ -337,6 +336,8 @@ export function AdaptivePanel({
   const isEli5Available =
     !!eli5Unlocked[topicSlug];
 
+
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -357,20 +358,20 @@ export function AdaptivePanel({
 
   /* ----------------------------- Load analysis ----------------------------- */
 
-  useEffect(() => {
+  const loadAnalysis = useCallback((forceRefresh: boolean = false) => {
     const cached = videoAnalyses[cacheKey];
 
-    const hasValidChapters =
+    // Detect stale or old static mock data: require version === 3
+    const isValid =
+      !forceRefresh &&
       cached &&
+      cached.version === 3 &&
       cached.chapters &&
       cached.chapters.length > 0 &&
-      cached.chapters.every(
-        (c) =>
-          c.summary &&
-          c.summary.length > 100
-      );
+      cached.quiz &&
+      cached.quiz.length > 0;
 
-    if (cached && hasValidChapters) {
+    if (isValid) {
       setAnalysis(cached);
       setLoading(false);
       return;
@@ -393,7 +394,11 @@ export function AdaptivePanel({
       .finally(() => {
         setLoading(false);
       });
-  }, [topicSlug, videoId]);
+  }, [cacheKey, topicSlug, topicTitle, videoId, videoAnalyses, cacheVideoAnalysis]);
+
+  useEffect(() => {
+    loadAnalysis(false);
+  }, [loadAnalysis]);
 
   /* --------------------------- Panel time tracking -------------------------- */
 
@@ -430,7 +435,7 @@ export function AdaptivePanel({
   }, [activeTab]);
 
   const styleMeta =
-    STYLE_META[dominantStyle];
+    (dominantStyle && STYLE_META?.[dominantStyle]) || STYLE_META?.unknown;
 
   const isStyleDetected =
     dominantStyle !== 'unknown';
@@ -445,66 +450,70 @@ export function AdaptivePanel({
 
       <header className={styles.panelHeader}>
         <div className={styles.headerMain}>
-          <div className={styles.headingBlock}>
-            <span className={styles.eyebrow}>
-              LESSON NOTES
-            </span>
+          <div className={styles.headerTopRow}>
+            <div className={styles.eyebrowBadge}>
+              <FileText size={12} />
+              <span>Lesson Notes</span>
+            </div>
 
+            <div className={styles.headerActions}>
+              <button
+                type="button"
+                className={styles.secondaryButton}
+                title="Regenerate dynamic notes, quiz, and mindmap for this topic"
+                onClick={() => loadAnalysis(true)}
+                disabled={loading}
+              >
+                <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
+                <span>{loading ? 'Refreshing…' : 'Regenerate'}</span>
+              </button>
+
+              <button
+                type="button"
+                className={styles.secondaryButton}
+                title="Download Presentation Slides (.pptx)"
+                onClick={() => {
+                  import('@/lib/ppt-generator').then(
+                    ({ generatePPT }) => {
+                      if (analysis) {
+                        generatePPT(
+                          topicTitle,
+                          analysis
+                        );
+                      }
+                    }
+                  );
+                }}
+              >
+                <Download size={12} />
+                <span>PPT</span>
+              </button>
+
+              <button
+                type="button"
+                className={
+                  isCompleted
+                    ? `${styles.secondaryButton} ${styles.completedButton}`
+                    : styles.primaryButton
+                }
+                onClick={onToggleComplete}
+              >
+                {isCompleted && (
+                  <Check size={12} />
+                )}
+                <span>
+                  {isCompleted
+                    ? 'Completed'
+                    : 'Mark Done'}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div className={styles.headingBlock}>
             <h2 className={styles.topicTitle}>
               {topicTitle}
             </h2>
-
-            {isStyleDetected && (
-              <p className={styles.learningStyle}>
-                <span className={styles.learningStyleEmoji}>
-                  {styleMeta.emoji}
-                </span>
-
-                Showing{' '}
-                {styleMeta.label.split(' ')[0].toLowerCase()}{' '}
-                layout
-              </p>
-            )}
-          </div>
-
-          <div className={styles.headerActions}>
-            <button
-              type="button"
-              className={styles.secondaryButton}
-              onClick={() => {
-                import('@/lib/ppt-generator').then(
-                  ({ generatePPT }) => {
-                    if (analysis) {
-                      generatePPT(
-                        topicTitle,
-                        analysis
-                      );
-                    }
-                  }
-                );
-              }}
-            >
-              <Download size={13} />
-              PPT
-            </button>
-
-            <button
-              type="button"
-              className={
-                isCompleted
-                  ? `${styles.secondaryButton} ${styles.completedButton}`
-                  : styles.primaryButton
-              }
-              onClick={onToggleComplete}
-            >
-              {isCompleted && (
-                <Check size={13} />
-              )}
-
-              {isCompleted
-                ? 'Completed'
-                : 'Mark Done'}
-            </button>
           </div>
         </div>
 
@@ -594,154 +603,96 @@ export function AdaptivePanel({
                     <span className={styles.sectionEyebrow}>
                       {eli5Mode
                         ? "EXPLAIN LIKE I'M 5"
-                        : 'KEY CONCEPTS'}
+                        : 'KEY CONCEPTS & SUMMARY'}
                     </span>
 
                     <p className={styles.sectionDescription}>
                       {eli5Mode
-                        ? 'A simpler explanation of the lesson.'
-                        : 'The important ideas extracted from this lesson.'}
+                        ? 'Simpler analogies and beginner-friendly intuition.'
+                        : 'Core technical concepts and takeaways from this lecture.'}
                     </p>
                   </div>
 
-                  {isEli5Available && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setEli5Mode(
-                          (m) => !m
-                        )
-                      }
-                      className={`${styles.eli5Toggle} ${eli5Mode
-                          ? styles.eli5ToggleActive
-                          : ''
-                        }`}
-                    >
-                      <span>
-                        {eli5Mode
-                          ? '🧠'
-                          : '👶'}
-                      </span>
-
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEli5Mode(
+                        (m) => !m
+                      )
+                    }
+                    className={`${styles.eli5Toggle} ${eli5Mode
+                        ? styles.eli5ToggleActive
+                        : ''
+                      }`}
+                    title="Toggle simple ELI5 explanation"
+                  >
+                    <span>
                       {eli5Mode
-                        ? 'Normal Mode'
+                        ? '🧠'
+                        : '👶'}
+                    </span>
+
+                    <span>
+                      {eli5Mode
+                        ? 'Normal View'
                         : 'ELI5 Mode'}
-                    </button>
-                  )}
+                    </span>
+                  </button>
                 </div>
+
+                {eli5Mode && analysis.eli5 && (
+                  <div className={styles.eli5Banner}>
+                    <span className={styles.eli5BannerIcon}>💡</span>
+                    <div>
+                      <h4 className={styles.eli5BannerHeading}>ELI5: Intuitive Analogy</h4>
+                      <p className={styles.eli5BannerText}>{analysis.eli5}</p>
+                    </div>
+                  </div>
+                )}
 
                 <div className={styles.summaryList}>
-                  {(eli5Mode &&
-                    analysis.eli5Summary
-                    ? analysis.eli5Summary
-                    : analysis.summary
-                  ).map((point, i) => (
-                    <article
-                      key={i}
-                      className={`${styles.summaryItem} ${eli5Mode
-                          ? styles.summaryItemEli5
-                          : ''
-                        }`}
-                    >
-                      <span className={styles.summaryIcon}>
-                        {point.emoji}
-                      </span>
+                  {(() => {
+                    const rawList = (eli5Mode && analysis.eli5Summary)
+                      ? analysis.eli5Summary
+                      : analysis.summary;
 
-                      <div>
-                        <h3 className={styles.summaryHeading}>
-                          {point.heading}
-                        </h3>
+                    const list = (rawList && rawList.length > 0) ? rawList : [
+                      { emoji: '📌', heading: `Introduction to ${topicTitle}`, detail: `Fundamental principles, architecture, and core objectives of ${topicTitle}.` },
+                      { emoji: '🔑', heading: 'Core Concepts & Logic', detail: `Key structural mechanics and design guidelines explained in the lesson.` },
+                      { emoji: '💡', heading: 'Practical Application', detail: `Real-world examples, patterns, and implementation strategies.` },
+                    ];
 
-                        <p className={styles.summaryDetail}>
-                          {point.detail}
-                        </p>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              </section>
-            )}
+                    return list.map((point: any, i: number) => {
+                      const emoji = typeof point === 'object' ? (point.emoji || '📌') : '📌';
+                      const heading = typeof point === 'object' ? (point.heading || point.title || `Concept ${i + 1}`) : `Key Point ${i + 1}`;
+                      const detail = typeof point === 'object' ? (point.detail || point.description || point.text || '') : String(point);
 
-            {/* ============================================================ */}
-            {/* TRANSCRIPT                                                    */}
-            {/* ============================================================ */}
-
-            {activeTab === 'transcript' && (
-              <section className={styles.contentSection}>
-                <div className={styles.sectionHeaderSimple}>
-                  <span className={styles.sectionEyebrow}>
-                    VIDEO CHAPTERS
-                  </span>
-
-                  <p className={styles.sectionDescription}>
-                    Detailed chapter summaries generated
-                    from the video transcript.
-                  </p>
-                </div>
-
-                {analysis.chapters &&
-                  analysis.chapters.length > 0 ? (
-                  <div className={styles.transcriptList}>
-                    {analysis.chapters.map(
-                      (chapter, index) => (
+                      return (
                         <article
-                          key={index}
-                          className={
-                            styles.transcriptItem
-                          }
+                          key={i}
+                          className={`${styles.summaryItem} ${eli5Mode ? styles.summaryItemEli5 : ''}`}
                         >
-                          <button
-                            type="button"
-                            onClick={() =>
-                              onSeekVideo?.(
-                                chapter.seconds
-                              )
-                            }
-                            className={
-                              styles.timestampButton
-                            }
-                          >
-                            <Clock size={12} />
-                            {chapter.timestamp}
-                          </button>
+                          <span className={styles.summaryIcon}>
+                            {emoji}
+                          </span>
 
-                          <div
-                            className={
-                              styles.transcriptBody
-                            }
-                          >
-                            <h3
-                              className={
-                                styles.transcriptTitle
-                              }
-                            >
-                              {chapter.title}
+                          <div>
+                            <h3 className={styles.summaryHeading}>
+                              {heading}
                             </h3>
 
-                            <p
-                              className={
-                                styles.transcriptSummary
-                              }
-                            >
-                              {chapter.summary}
+                            <p className={styles.summaryDetail}>
+                              {detail}
                             </p>
                           </div>
                         </article>
-                      )
-                    )}
-                  </div>
-                ) : (
-                  <div
-                    className={
-                      styles.emptyState
-                    }
-                  >
-                    No chapter segment summaries
-                    available.
-                  </div>
-                )}
+                      );
+                    });
+                  })()}
+                </div>
               </section>
             )}
+
 
             {/* ============================================================ */}
             {/* MINDMAP                                                       */}
@@ -757,26 +708,31 @@ export function AdaptivePanel({
                   data={analysis.mindmap}
                   title={topicTitle}
                   onNodeClick={(slug) => {
-                    const chunk =
-                      analysis.transcript.find(
-                        (t) =>
-                          t.conceptTags?.some(
-                            (tag) =>
-                              slug.includes(
-                                tag
-                                  .toLowerCase()
-                                  .replace(
-                                    /\s+/g,
-                                    '-'
-                                  )
-                              )
-                          )
-                      );
+                    const transcriptList = Array.isArray(analysis.transcript) ? analysis.transcript : [];
+                    const chunk = transcriptList.find(
+                      (t) =>
+                        t.conceptTags?.some(
+                          (tag) =>
+                            slug.toLowerCase().includes(
+                              tag.toLowerCase().replace(/\s+/g, '-')
+                            ) ||
+                            tag.toLowerCase().includes(slug.toLowerCase())
+                        )
+                    );
 
-                    if (chunk) {
-                      onSeekVideo?.(
-                        chunk.startTime
-                      );
+                    if (chunk && typeof chunk.startTime === 'number') {
+                      onSeekVideo?.(chunk.startTime);
+                      return;
+                    }
+
+                    // Fallback to chapter match
+                    const matchedChapter = (analysis.chapters || []).find((ch: any) =>
+                      ch.title?.toLowerCase().includes(slug.toLowerCase()) ||
+                      slug.toLowerCase().includes(ch.title?.toLowerCase().slice(0, 10))
+                    );
+                    if (matchedChapter) {
+                      const sec = matchedChapter.seconds ?? matchedChapter.startTime ?? 0;
+                      onSeekVideo?.(sec);
                     }
                   }}
                 />

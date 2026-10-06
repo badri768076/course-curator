@@ -20,14 +20,16 @@ function generateMessages(profile: LearningProfile, topicSlug: string, eli5Unloc
 
   // ── Always show style detection status ──
   if (dominantStyle !== 'unknown') {
-    const meta = STYLE_META[dominantStyle];
-    messages.push({
-      id: 'style-detected',
-      emoji: meta.emoji,
-      text: `Your dominant style is ${meta.label}! Content is now auto-optimised for you.`,
-      type: 'insight',
-      priority: 1,
-    });
+    const meta = (dominantStyle && STYLE_META?.[dominantStyle]) || STYLE_META?.unknown;
+    if (meta) {
+      messages.push({
+        id: 'style-detected',
+        emoji: meta.emoji,
+        text: `Your dominant style is ${meta.label}! Content is now auto-optimised for you.`,
+        type: 'insight',
+        priority: 1,
+      });
+    }
   }
 
   // ── Answering Style ──
@@ -95,7 +97,7 @@ function generateMessages(profile: LearningProfile, topicSlug: string, eli5Unloc
     messages.push({
       id: 'rewinds',
       emoji: '⏪',
-      text: 'Rewinding often? Check the Transcript tab to read along at your pace.',
+      text: 'Rewinding often? Check the Summary tab or ask the AI Tutor for clarification.',
       type: 'tip',
       priority: 3,
     });

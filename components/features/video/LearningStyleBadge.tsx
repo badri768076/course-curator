@@ -14,10 +14,10 @@ export function LearningStyleBadge() {
   }, []);
 
   const { dominantStyle, scores, totalEngagementMs, videoPauses, videoRewinds } = learningProfile;
-  const meta = STYLE_META[dominantStyle];
+  const meta = (dominantStyle && STYLE_META?.[dominantStyle]) || STYLE_META?.unknown;
   const isKnown = dominantStyle !== 'unknown';
 
-  if (!isMounted) return null;
+  if (!isMounted || !meta) return null;
 
   const totalScore = Object.values(scores).reduce((a, b) => a + b, 0) || 1;
   const styleOrder: Array<keyof typeof scores> = ['visual', 'auditory', 'read-write', 'kinesthetic'];
@@ -57,7 +57,7 @@ export function LearningStyleBadge() {
             </p>
             {styleOrder.map((style) => {
               const pct = Math.round((scores[style] / totalScore) * 100);
-              const m = STYLE_META[style];
+              const m = (style && STYLE_META?.[style]) || STYLE_META?.unknown || meta;
               return (
                 <div key={style} style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: style === dominantStyle ? 'white' : 'hsl(var(--text-secondary))' }}>

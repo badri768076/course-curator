@@ -8,6 +8,7 @@ export interface VideoAnalysisResult {
   topicSlug: string;
   videoId: string;
   generatedAt: string;
+  version?: number;
   summary: VideoSummaryItem[];
   transcript: TranscriptSegment[];
   chapters: VideoChapter[];
@@ -29,6 +30,8 @@ export interface VideoSummaryItem {
   detail: string;
 }
 
+export type VideoSummaryPoint = VideoSummaryItem;
+
 // ============================================
 // TRANSCRIPT TYPES
 // ============================================
@@ -39,7 +42,10 @@ export interface TranscriptSegment {
   endTime: number;
   seconds?: number;
   timestamp?: string;
+  conceptTags?: string[];
 }
+
+export type TranscriptChunk = TranscriptSegment;
 
 // ============================================
 // CHAPTER TYPES
@@ -50,7 +56,7 @@ export interface VideoChapter {
   startTime: number;
   endTime: number;
   summary: string;
-  keyPoints: string[];
+  keyPoints?: string[];
   seconds?: number;
   timestamp?: string;
 }
@@ -78,9 +84,11 @@ export interface MindmapData {
   layout?: 'radial' | 'tree' | 'horizontal';
 }
 
+export type VideoMindmapData = MindmapData;
+
 export interface MindmapNode {
   id: string;
-  slug: string;
+  slug?: string;
   label: string;
   type: 'root' | 'chapter' | 'topic';
   parentId?: string;
@@ -97,9 +105,11 @@ export interface MindmapNode {
 }
 
 export interface MindmapEdge {
-  id: string;
-  source: string;
-  target: string;
+  id?: string;
+  source?: string;
+  target?: string;
+  from?: string;
+  to?: string;
   label?: string;
   type?: 'direct' | 'dashed' | 'dotted';
 }
@@ -114,6 +124,8 @@ export interface FlowchartData {
   title?: string;
 }
 
+export type VideoFlowchartData = FlowchartData;
+
 export interface FlowchartNode {
   id: string;
   label: string;
@@ -125,9 +137,11 @@ export interface FlowchartNode {
 }
 
 export interface FlowchartEdge {
-  id: string;
-  source: string;
-  target: string;
+  id?: string;
+  source?: string;
+  target?: string;
+  from?: string;
+  to?: string;
   label?: string;
   condition?: string;
 }

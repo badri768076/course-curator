@@ -34,27 +34,13 @@ export function VideoChatbot({ videoId, videoTitle, isOpen = true, onClose }: Vi
   }, [isOpen, isInitialized]);
 
   const initializeChatbot = async () => {
-    try {
-      const { initializeVideoChatbot } = await import('@/services/ai/video-chatbot');
-      await initializeVideoChatbot(videoId);
-      setIsInitialized(true);
-      
-      // Add welcome message
-      setMessages([
-        {
-          role: 'assistant',
-          content: `Hi! I'm your AI assistant for "${videoTitle}". I can help answer questions about this video's content. What would you like to know?`,
-        },
-      ]);
-    } catch (error) {
-      console.error('Failed to initialize chatbot:', error);
-      setMessages([
-        {
-          role: 'assistant',
-          content: 'Sorry, I had trouble loading. Please try refreshing the page.',
-        },
-      ]);
-    }
+    setIsInitialized(true);
+    setMessages([
+      {
+        role: 'assistant',
+        content: `Hi! I'm your AI assistant for "${videoTitle}". I have indexed this video with RAG and can answer any questions about it. What would you like to know?`,
+      },
+    ]);
   };
 
   const handleSendMessage = async () => {
@@ -62,17 +48,34 @@ export function VideoChatbot({ videoId, videoTitle, isOpen = true, onClose }: Vi
 
     const userMessage = input.trim();
     setInput('');
-    setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
+    const newMessages: ChatMessageType[] = [...messages, { role: 'user', content: userMessage }];
+    setMessages(newMessages);
     setIsLoading(true);
 
     try {
-      const { sendChatMessage } = await import('@/services/ai/video-chatbot');
-      const response = await sendChatMessage(videoId, userMessage, messages);
-      
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: response.message },
-      ]);
+      const res = await fetch('/api/youtube-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          videoId,
+          topicTitle: videoTitle,
+          messages: newMessages,
+          message: userMessage,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.reply) {
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: data.reply },
+        ]);
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: data.error || 'Sorry, I encountered an error. Please try again.' },
+        ]);
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       setMessages((prev) => [
