@@ -20,38 +20,39 @@ interface CourseBlueprint {
   }>;
 }
 
-// ── Curated Real Learning Videos for Instant Fallbacks ──
-const REAL_LEARNING_VIDEOS: Record<string, string> = {
-  python: 'kqtD5dpn9C8',
-  javascript: 'W6NZfCO5SIk',
-  react: 'bMknfKXIFA8',
-  html: 'kUMe1FH4CHE',
-  css: '1PnVor36_40',
-  next: 'ZVnjOPwW_EC',
-  node: 'f2EqECiTBL8',
-  typescript: 'BwuLxPH8IDs',
-  machine: 'i_LwzRVP7bg', // Standalone Machine Learning course
-  ml: 'i_LwzRVP7bg',
-  ai: 'JMUxmLrFLDY',
-  data: '8hly31xKli0',
-  sql: 'HXV3zeRR3h4',
-  git: 'RGOj5yH7evk',
-  quantum: 'JhHMJCUmq28',
-  security: 'inWWhr5tnEA',
-  docker: 'fqMOX6JJhGo',
-  algorithm: '8hly31xKli0',
-  system: 'xpDnVSmGVd0',
-  general: 'rfscVS0vtbw',
+// ── Curated Real Learning Video Pools for Diverse Topic Assignment ──
+const REAL_LEARNING_VIDEOS: Record<string, string[]> = {
+  python: ['kqtD5dpn9C8', 'rfscVS0vtbw', 'eWRfhZUzrAc', '_uQrJ0TkZlc', 'HGOBQPFzWKo', 'ZDa-Z5JzLYM'],
+  javascript: ['W6NZfCO5SIk', 'PkZNo7MFNFg', 'hdI2bqOjy3c', 'jS4aFq5-91M', 'poNTB9iC7_M'],
+  react: ['bMknfKXIFA8', 'SqcY0GlETPk', 'w7ejDZ8SWv8', 'x4rFhThSX04', '0riHps91AzE', 'lawz4ZgkOzc'],
+  html: ['kUMe1FH4CHE', 'mJgBOIoGihA', 'MDLn5-zSQQI'],
+  css: ['1PnVor36_40', 'yfoY53QU73t', 'OXGznpKZ_sA'],
+  next: ['ZVnjOPwW_EC', 'wm5gMKuwSYk'],
+  node: ['f2EqECiTBL8', 'TlB_eWDSMt4'],
+  typescript: ['BwuLxPH8IDs', 'd56mG7DezGs'],
+  machine: ['i_LwzRVP7bg', 'ukzFI9rgwfU', 'aircAruvnKk', 'IHZwWFHWa-w', 'Gv9_4yMHFhI', 'yIYKR4sgzI8', '7eh4d6sabA0', 'J4Wdy0Wc_xQ'],
+  ml: ['i_LwzRVP7bg', 'ukzFI9rgwfU', 'aircAruvnKk', 'IHZwWFHWa-w', 'Gv9_4yMHFhI'],
+  ai: ['JMUxmLrFLDY', '5NgNicANyqM', 'i_LwzRVP7bg', 'aircAruvnKk'],
+  data: ['8hly31xKli0', 'RBSGKlAvoiM', 'zg9ih6SVACc', 'oBt53YbR9Kk'],
+  sql: ['HXV3zeRR3h4', '7S_tz1z_5bA'],
+  git: ['RGOj5yH7evk', '8JJ116dXsuI'],
+  quantum: ['JhHMJCUmq28'],
+  security: ['inWWhr5tnEA'],
+  docker: ['fqMOX6JJhGo', 'pg19Z8LL06w'],
+  algorithm: ['8hly31xKli0', 'RBSGKlAvoiM'],
+  system: ['xpDnVSmGVd0'],
+  general: ['rfscVS0vtbw', 'zOjov-2OZ0E', 'kqtD5dpn9C8', '8hly31xKli0', 'W6NZfCO5SIk', 'bMknfKXIFA8'],
 };
 
-function resolveVideoId(topicText: string): string {
+function resolveVideoId(topicText: string, topicIndex: number = 0): string {
   const lower = topicText.toLowerCase();
-  for (const [key, id] of Object.entries(REAL_LEARNING_VIDEOS)) {
+  for (const [key, list] of Object.entries(REAL_LEARNING_VIDEOS)) {
     if (lower.includes(key)) {
-      return id;
+      return list[topicIndex % list.length];
     }
   }
-  return REAL_LEARNING_VIDEOS.general;
+  const hash = topicText.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return REAL_LEARNING_VIDEOS.general[(hash + topicIndex) % REAL_LEARNING_VIDEOS.general.length];
 }
 
 // ── Rich Curated Blueprints for Major Domains ──
@@ -342,7 +343,7 @@ export function generateFallbackCourse(topic: string): Course {
           slug: topicSlug,
           title: tBlueprint.title,
           description: tBlueprint.description,
-          videoId: resolveVideoId(`${cleanTopic} ${tBlueprint.title}`),
+          videoId: resolveVideoId(`${cleanTopic} ${tBlueprint.title}`, (i * 3) + j),
           videoQuery: tBlueprint.videoQuery,
           estimatedDuration: tBlueprint.estimatedDuration,
           prerequisites: j > 0 ? [chBlueprint.topics[j - 1].title] : [],

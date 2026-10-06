@@ -6,9 +6,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { videoId, messages, message, topicTitle } = body;
 
-    if (!videoId) {
-      return NextResponse.json({ error: 'Video ID is required' }, { status: 400 });
-    }
+    // Allow videoId to be optional for course-level tutoring
+    const activeVideoId = videoId || 'course-overview';
 
     // Extract the latest user message
     let userQuery = '';
@@ -32,7 +31,7 @@ export async function POST(req: NextRequest) {
 
     // Call RAG-augmented chatbot engine
     const response = await sendChatMessage(
-      videoId,
+      activeVideoId,
       userQuery,
       conversationHistory,
       topicTitle

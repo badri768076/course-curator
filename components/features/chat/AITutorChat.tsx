@@ -18,15 +18,9 @@ export function AITutorChat({ videoId, topicTitle }: AITutorChatProps) {
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        if (videoId) {
-            setMessages([
-                { role: 'model', content: `Hi there! 👋\nI'm your AI Tutor. Let's explore "${topicTitle || 'this video'}". How can I help you today?` }
-            ]);
-        } else {
-            setMessages([
-                { role: 'model', content: "Hi! 👋\nPlease select a topic with a video to start chatting." }
-            ]);
-        }
+        setMessages([
+            { role: 'model', content: `Hi there! 👋\nI'm your AI Tutor for **"${topicTitle || 'your course'}"**. What would you like to explore today?` }
+        ]);
         setInputMessage('');
         setIsLoading(false);
     }, [videoId, topicTitle]);
@@ -36,7 +30,7 @@ export function AITutorChat({ videoId, topicTitle }: AITutorChatProps) {
     }, [messages]);
 
     const sendMessage = async (text: string) => {
-        if (!text.trim() || !videoId || isLoading) return;
+        if (!text.trim() || isLoading) return;
 
         const newMessage = { role: 'user' as const, content: text };
         const updatedMessages = [...messages, newMessage];
@@ -49,18 +43,23 @@ export function AITutorChat({ videoId, topicTitle }: AITutorChatProps) {
             const response = await fetch('/api/youtube-chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ videoId, topicTitle, messages: updatedMessages, message: text }),
+                body: JSON.stringify({
+                    videoId: videoId || 'course-overview',
+                    topicTitle: topicTitle || 'Course Overview',
+                    messages: updatedMessages,
+                    message: text,
+                }),
             });
 
             const data = await response.json();
 
-            if (response.ok) {
+            if (response.ok && data.reply) {
                 setMessages([...updatedMessages, { role: 'model', content: data.reply }]);
             } else {
-                setMessages([...updatedMessages, { role: 'model', content: `Error: ${data.error}` }]);
+                setMessages([...updatedMessages, { role: 'model', content: data.error || 'Encountered an issue retrieving answer.' }]);
             }
         } catch (error) {
-            setMessages([...updatedMessages, { role: 'model', content: 'An unexpected error occurred.' }]);
+            setMessages([...updatedMessages, { role: 'model', content: 'An unexpected error occurred. Please try again.' }]);
         } finally {
             setIsLoading(false);
         }
@@ -133,13 +132,13 @@ export function AITutorChat({ videoId, topicTitle }: AITutorChatProps) {
                     type="text"
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
-                    placeholder={videoId ? "Ask anything..." : "Select a video first..."}
-                    disabled={!videoId || isLoading}
+                    placeholder="Ask anything about this course..."
+                    disabled={isLoading}
                     className={styles.chatInput}
                 />
                 <button
                     type="submit"
-                    disabled={!videoId || isLoading || !inputMessage.trim()}
+                    disabled={isLoading || !inputMessage.trim()}
                     className={styles.sendButton}
                 >
                     <Send size={16} />

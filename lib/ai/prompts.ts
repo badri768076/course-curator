@@ -31,16 +31,14 @@ Return ONLY valid JSON in this exact structure, no markdown, no additional text:
 }
 
 Guidelines:
-- Generate 3-6 chapters depending on topic complexity
-- Each chapter should have 2-5 topics
-- Topics MUST be specific to the given topic - include the topic name in titles where appropriate
-- videoQuery MUST be a specific search phrase that will find good educational content on YouTube
-- Ensure logical progression from fundamentals to advanced concepts
-- Total course should take 3-8 hours to complete
-- Make titles engaging but clear
-- Include practical applications specific to the topic
-- AVOID generic topics like "Introduction" - make them topic-specific like "Introduction to React Hooks"
-- Customize chapter titles to reflect the actual subject matter
+- Generate 5-8 distinct, progressive chapters spanning fundamentals, core mechanics, real-world implementations, edge cases, advanced optimization, and deployment
+- Each chapter MUST contain 3-5 unique, focused topics (aim for 15-25 total topics across the entire course)
+- Topics MUST be specific and granular to the given topic (e.g. 'Backpropagation Calculus in Neural Networks', not just 'Math')
+- videoQuery MUST be a uniquely targeted YouTube search phrase for that exact topic (e.g., 'backpropagation calculus neural networks 3blue1brown tutorial')
+- Ensure logical progression from absolute beginner fundamentals to advanced production patterns
+- Total course should represent 8-20 hours of comprehensive learning
+- AVOID shallow or generic chapters; make every module deep, practical, and highly engaging
+- Customize chapter titles and topic titles to reflect the true depth of the subject matter
 `;
 
 export function buildCoursePrompt(

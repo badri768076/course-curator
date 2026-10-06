@@ -74,16 +74,17 @@ export async function sendChatMessage(
   conversationHistory: ChatMessage[] = [],
   topicTitle?: string
 ): Promise<ChatbotResponse> {
-  console.log(`💬 Processing RAG chat message for video: ${videoId} (${topicTitle || 'No title'})`);
+  const safeVideoId = videoId && videoId.trim() !== '' ? videoId : 'course-overview';
+  console.log(`💬 Processing RAG chat message for video: ${safeVideoId} (${topicTitle || 'No title'})`);
 
   // 1. Ensure RAG index exists for this video
-  if (!ragVectorStore.hasVideo(videoId)) {
-    await initializeVideoChatbot(videoId, topicTitle);
+  if (safeVideoId !== 'course-overview' && !ragVectorStore.hasVideo(safeVideoId)) {
+    await initializeVideoChatbot(safeVideoId, topicTitle);
   }
 
   // 2. Retrieve relevant chunks using hybrid search
-  const retrievedChunks = await retrieveRAGChunks(videoId, userMessage, 4);
-  const context = await retrieveContext(videoId, userMessage, 4);
+  const retrievedChunks = safeVideoId !== 'course-overview' ? await retrieveRAGChunks(safeVideoId, userMessage, 4) : [];
+  const context = safeVideoId !== 'course-overview' ? await retrieveContext(safeVideoId, userMessage, 4) : '';
 
   const citations: ChatCitation[] = retrievedChunks.map((r) => ({
     time: r.chunk.formattedTime,

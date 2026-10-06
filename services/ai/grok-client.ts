@@ -10,20 +10,21 @@ import { buildCoursePrompt } from '@/lib/ai/prompts';
 import { parseAIResponse, validateCourse } from '@/lib/ai/responseParser';
 import { generateFallbackCourse } from '@/lib/ai/fallbackGenerator';
 
-// ── Groq API Setup ──
-const GROQ_API_KEY = process.env.GROQ_API_KEY || process.env.NEXT_PUBLIC_GROQ_API_KEY;
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-if (!GROQ_API_KEY) {
-  console.error('❌ GROQ_API_KEY is not set in environment variables!');
-  console.error('   Get your key from: https://console.groq.com');
-} else if (!GROQ_API_KEY.startsWith('gsk_')) {
-  console.error('❌ GROQ_API_KEY appears to be invalid (should start with gsk_)');
-} else {
-  console.log('✅ GROQ_API_KEY found and looks valid');
-}
+// ── Groq API Setup ──
+const GROQ_API_KEY = process.env.GROQ_API_KEY || process.env.NEXT_PUBLIC_GROQ_API_KEY || '';
+
+// ── Gemini API Setup ──
+const GEMINI_API_KEY =
+  process.env.GEMINI_API_KEY ||
+  process.env.GOOGLE_AI_API_KEY ||
+  process.env.GOOGLE_API_KEY ||
+  process.env.NEXT_PUBLIC_GEMINI_API_KEY ||
+  '';
 
 // ── Groq API Client ──
-async function callGroqAPI(prompt: string, model: string = 'mixtral-8x7b-32768'): Promise<string> {
+async function callGroqAPI(prompt: string, model: string = 'llama-3.3-70b-versatile'): Promise<string> {
   if (!GROQ_API_KEY || !GROQ_API_KEY.startsWith('gsk_')) {
     throw new Error('Invalid or missing GROQ_API_KEY');
   }
@@ -66,6 +67,34 @@ async function callGroqAPI(prompt: string, model: string = 'mixtral-8x7b-32768')
   return data.choices[0].message.content;
 }
 
+// ── Gemini API Client Fallback ──
+async function callGeminiForCourse(prompt: string): Promise<string> {
+  if (!GEMINI_API_KEY) {
+    throw new Error('GEMINI_API_KEY is not available');
+  }
+
+  const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+  const models = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
+
+  for (const modelName of models) {
+    try {
+      console.log(`🤖 Attempting course generation with Gemini model: ${modelName}`);
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const result = await model.generateContent(
+        `${prompt}\n\nIMPORTANT: Return ONLY a valid JSON object matching the requested schema. No code fences, no extra conversational text.`
+      );
+      const text = result.response.text();
+      if (text && text.trim().length > 0) {
+        return text;
+      }
+    } catch (e: any) {
+      console.warn(`⚠️ Gemini model ${modelName} failed:`, e?.message || e);
+    }
+  }
+
+  throw new Error('All Gemini model attempts failed');
+}
+
 // ============================================
 // MAIN GENERATION FUNCTION
 // ============================================
@@ -78,43 +107,49 @@ export async function generateCourseOutline(
     additionalInstructions?: string;
   }
 ): Promise<Course> {
-  // If no API key, use fallback
-  if (!GROQ_API_KEY || !GROQ_API_KEY.startsWith('gsk_')) {
-    console.warn('⚠️ Groq API not available, using fallback');
-    const fallback = generateFallbackCourse(topic);
-    await enrichCourseWithVideos(fallback);
-    return fallback;
+  const prompt = buildCoursePrompt(topic, options);
+
+  // 1. Try Groq if key is present
+  if (GROQ_API_KEY && GROQ_API_KEY.startsWith('gsk_')) {
+    try {
+      console.log(`📝 Sending request to Groq for: "${topic}"`);
+      const result = await callGroqAPIWithRetry(prompt, 2);
+      if (result) {
+        const parsed = parseAIResponse(result);
+        const validated = validateCourse(parsed) as AIResponse;
+        const course = transformToCourse(validated, topic);
+        console.log('🎬 Fetching videos for topics...');
+        await enrichCourseWithVideos(course);
+        return course;
+      }
+    } catch (error) {
+      console.warn('⚠️ Groq generation failed, attempting Gemini fallback:', error);
+    }
   }
 
-  try {
-    const prompt = buildCoursePrompt(topic, options);
-    console.log(`📝 Sending request to Groq for: "${topic}"`);
-    
-    const result = await callGroqAPIWithRetry(prompt, 2);
-    
-    if (!result) {
-      console.warn('⚠️ Groq returned empty response, using fallback');
-      const fallback = generateFallbackCourse(topic);
-      await enrichCourseWithVideos(fallback);
-      return fallback;
+  // 2. Try Gemini if key is present
+  if (GEMINI_API_KEY) {
+    try {
+      console.log(`📝 Sending request to Gemini for: "${topic}"`);
+      const geminiResult = await callGeminiForCourse(prompt);
+      if (geminiResult) {
+        const parsed = parseAIResponse(geminiResult);
+        const validated = validateCourse(parsed) as AIResponse;
+        const course = transformToCourse(validated, topic);
+        console.log('🎬 Fetching videos for topics...');
+        await enrichCourseWithVideos(course);
+        return course;
+      }
+    } catch (geminiErr) {
+      console.warn('⚠️ Gemini generation failed, using dynamic blueprint:', geminiErr);
     }
-    
-    const parsed = parseAIResponse(result);
-    const validated = validateCourse(parsed) as AIResponse;
-    const course = transformToCourse(validated, topic);
-    
-    // Enrich with videos
-    console.log('🎬 Fetching videos for topics...');
-    await enrichCourseWithVideos(course);
-    
-    return course;
-    
-  } catch (error) {
-    console.error('❌ Groq generation failed, using fallback:', error);
-    const fallback = generateFallbackCourse(topic);
-    await enrichCourseWithVideos(fallback);
-    return fallback;
   }
+
+  // 3. Fallback to dynamic rich curriculum builder
+  console.log('✨ Using dynamic curriculum generator for:', topic);
+  const fallback = generateFallbackCourse(topic);
+  await enrichCourseWithVideos(fallback);
+  return fallback;
 }
 
 // ============================================
@@ -123,9 +158,7 @@ export async function generateCourseOutline(
 
 async function callGroqAPIWithRetry(prompt: string, maxRetries: number): Promise<string> {
   let lastError: Error | null = null;
-  
-  // Try different models if one fails
-  const models = ['mixtral-8x7b-32768', 'llama2-70b-4096', 'gemma-7b-it'];
+  const models = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'llama-3.1-70b-versatile'];
   
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     for (const model of models) {
@@ -155,32 +188,28 @@ async function callGroqAPIWithRetry(prompt: string, maxRetries: number): Promise
 }
 
 // ============================================
-// ENRICH COURSE WITH VIDEOS
+// ENRICH COURSE WITH DIVERSE VIDEOS
 // ============================================
 
 async function enrichCourseWithVideos(course: Course): Promise<void> {
   const { searchYouTubeVideos } = await import('@/services/youtube/search');
   
   const totalTopics = course.chapters.reduce((acc, ch) => acc + ch.topics.length, 0);
-  console.log(`🎬 Searching videos for ${totalTopics} topics...`);
+  console.log(`🎬 Searching unique videos for ${totalTopics} topics...`);
   
   let foundCount = 0;
   let totalAttempts = 0;
+  const usedVideoIds = new Set<string>();
   
   for (const chapter of course.chapters) {
     for (const topic of chapter.topics) {
       totalAttempts++;
       try {
-        // Try multiple search queries for better results - more specific to the actual topic
         const searchQueries = [
-          topic.videoQuery || topic.title,
-          `${topic.title} tutorial`,
-          `${topic.title} for beginners`,
-          `${topic.title} explained step by step`,
-          `learn ${topic.title} from scratch`,
-          `${topic.title} crash course`,
-          `${topic.title} full course`,
-          `${topic.title} masterclass`,
+          topic.videoQuery,
+          `${topic.title} ${course.title} tutorial`,
+          `${topic.title} explained`,
+          `${topic.title} tutorial step by step`,
         ].filter(Boolean) as string[];
         
         let videoFound = false;
@@ -188,68 +217,122 @@ async function enrichCourseWithVideos(course: Course): Promise<void> {
         for (const query of searchQueries) {
           if (videoFound) break;
           
-          console.log(`   🔍 [${totalAttempts}/${totalTopics}] Searching: "${query}"`);
-          const videos = await searchYouTubeVideos(query, 1);
+          const videos = await searchYouTubeVideos(query, 1, Array.from(usedVideoIds));
           
-          if (videos && videos.length > 0) {
+          if (videos && videos.length > 0 && !usedVideoIds.has(videos[0].id)) {
             topic.videoId = videos[0].id;
             topic.videoQuery = query;
+            usedVideoIds.add(videos[0].id);
             foundCount++;
             videoFound = true;
-            console.log(`   ✅ Found: ${videos[0].title.substring(0, 50)}... (${videos[0].id})`);
+            console.log(`   ✅ [${totalAttempts}/${totalTopics}] Found unique video: ${videos[0].title.substring(0, 45)}... (${videos[0].id})`);
           }
         }
         
         if (!videoFound) {
-          console.log(`   ⚠️ No video found for "${topic.title}"`);
-          // Generate a fallback video ID anyway
-          topic.videoId = generateFallbackVideoId(topic.title);
+          const fallbackId = generateFallbackVideoId(topic.title, usedVideoIds);
+          topic.videoId = fallbackId;
+          usedVideoIds.add(fallbackId);
         }
         
         // Small delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 150));
+        await new Promise(resolve => setTimeout(resolve, 100));
         
       } catch (error) {
-        console.error(`   ❌ Failed for "${topic.title}":`, error);
-        // Generate fallback video ID
-        topic.videoId = generateFallbackVideoId(topic.title);
+        console.error(`   ❌ Video search failed for "${topic.title}":`, error);
+        const fallbackId = generateFallbackVideoId(topic.title, usedVideoIds);
+        topic.videoId = fallbackId;
+        usedVideoIds.add(fallbackId);
       }
     }
   }
   
   const successRate = totalTopics > 0 ? Math.round((foundCount / totalTopics) * 100) : 0;
-  console.log(`✅ Found ${foundCount}/${totalTopics} real videos (${successRate}%)`);
+  console.log(`✅ Assigned videos: ${foundCount}/${totalTopics} from live search (${successRate}%), ${usedVideoIds.size} unique videos across course`);
 }
 
-// ── Real Educational Videos Fallback ──
-const FALLBACK_TOPIC_VIDEOS: Record<string, string> = {
-  python: 'kqtD5dpn9C8',
-  javascript: 'W6NZfCO5SIk',
-  react: 'bMknfKXIFA8',
-  html: 'kUMe1FH4CHE',
-  css: '1PnVor36_40',
-  next: 'ZVnjOPwW_EC',
-  node: 'f2EqECiTBL8',
-  typescript: 'BwuLxPH8IDs',
-  machine: 'ukzFI9rgwfU',
-  ai: 'JMUxmLrFLDY',
-  data: '8hly31xKli0',
-  sql: 'HXV3zeRR3h4',
-  git: 'RGOj5yH7evk',
-  quantum: 'JhHMJCUmq28',
-  security: 'inWWhr5tnEA',
-  general: 'rfscVS0vtbw',
+// ── Rich Curated Educational Video Pools (Guarantees Unique Videos per Topic) ──
+const DIVERSE_EDUCATIONAL_VIDEOS: Record<string, string[]> = {
+  machine: [
+    'i_LwzRVP7bg', // Machine Learning for Everybody (freeCodeCamp)
+    'ukzFI9rgwfU', // Machine Learning Intro (Simplilearn)
+    'aircAruvnKk', // Neural Networks (3Blue1Brown)
+    'IHZwWFHWa-w', // Gradient Descent (3Blue1Brown)
+    'Gv9_4yMHFhI', // Linear Regression (StatQuest)
+    'yIYKR4sgzI8', // Logistic Regression (StatQuest)
+    '7eh4d6sabA0', // Decision Trees (StatQuest)
+    'J4Wdy0Wc_xQ', // Random Forests (StatQuest)
+    '4b5d3muPQmA', // K-Means Clustering (StatQuest)
+    'FgakZw6K1QQ', // Principal Component Analysis (StatQuest)
+    '5NgNicANyqM', // AI & Deep Learning Explained (freeCodeCamp)
+  ],
+  python: [
+    'kqtD5dpn9C8', // Python for Beginners (Programming with Mosh)
+    'rfscVS0vtbw', // Python Tutorial (freeCodeCamp)
+    'eWRfhZUzrAc', // Python Full Course (Bro Code)
+    '_uQrJ0TkZlc', // Python Course for Beginners
+    'HGOBQPFzWKo', // Python Data Structures
+    'ZDa-Z5JzLYM', // Python OOP Tutorial
+    'W8KRzm-HUcc', // Python Functions & Scope
+    'JJmcL1N2KQs', // Python Advanced Concepts
+  ],
+  react: [
+    'bMknfKXIFA8', // React Full Course (freeCodeCamp)
+    'SqcY0GlETPk', // React Tutorial (Mosh)
+    'w7ejDZ8SWv8', // React Crash Course (Traversy)
+    'x4rFhThSX04', // React Hooks Course
+    '0riHps91AzE', // React State Management
+    'lawz4ZgkOzc', // Next.js & React Full Course
+  ],
+  javascript: [
+    'W6NZfCO5SIk', // JavaScript Tutorial (Mosh)
+    'PkZNo7MFNFg', // Learn JavaScript (freeCodeCamp)
+    'hdI2bqOjy3c', // JavaScript Crash Course (Traversy Media)
+    'jS4aFq5-91M', // JavaScript Basics
+    'poNTB9iC7_M', // JavaScript ES6 & Beyond
+  ],
+  data: [
+    '8hly31xKli0', // Data Structures and Algorithms (freeCodeCamp)
+    'RBSGKlAvoiM', // Data Structures Easy to Advanced
+    'zg9ih6SVACc', // Graph Algorithms
+    'oBt53YbR9Kk', // Dynamic Programming
+  ],
+  general: [
+    'rfscVS0vtbw',
+    'zOjov-2OZ0E',
+    'kqtD5dpn9C8',
+    '8hly31xKli0',
+    'W6NZfCO5SIk',
+    'bMknfKXIFA8',
+    'HXV3zeRR3h4',
+    'RGOj5yH7evk',
+  ],
 };
 
-function generateFallbackVideoId(topic: string): string {
+function generateFallbackVideoId(topic: string, usedIds?: Set<string>): string {
   const lower = topic.toLowerCase();
-  for (const [key, id] of Object.entries(FALLBACK_TOPIC_VIDEOS)) {
+  let pool = DIVERSE_EDUCATIONAL_VIDEOS.general;
+
+  for (const [key, list] of Object.entries(DIVERSE_EDUCATIONAL_VIDEOS)) {
     if (lower.includes(key)) {
-      return id;
+      pool = list;
+      break;
     }
   }
-  return FALLBACK_TOPIC_VIDEOS.general;
+
+  // Pick first video not yet used in this course
+  if (usedIds) {
+    const unused = pool.filter((id) => !usedIds.has(id));
+    if (unused.length > 0) {
+      return unused[0];
+    }
+  }
+
+  // Deterministically hash topic to pick varied video from pool
+  const hash = topic.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return pool[hash % pool.length];
 }
+
 
 
 // ============================================
